@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Green Compass Design Tokens */
+@theme {
+  --color-deep-forest: #0D3B2E;
+  --color-forest: #176B4D;
+  --color-sage: #8FAF9D;
+  --color-soft-sage: #E6EFE9;
+  --color-sky-blue: #5D93B8;
+  --color-soft-blue: #E8F1F7;
+  --color-warm-white: #FCFDFC;
+  --color-mist: #F3F6F4;
+  --color-stone: #E7ECE8;
+  --color-charcoal: #17211D;
+  --color-muted: #64716B;
+  --color-important: #C76B35;
+  --color-emergency: #A93226;
+  --color-delayed: #6C7880;
+}
