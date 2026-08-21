@@ -18,14 +18,17 @@ import (
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/config"
 	"green-compass-backend/internal/health"
+	"green-compass-backend/internal/observations"
 	"green-compass-backend/internal/places"
 	"green-compass-backend/internal/preferences"
+	"green-compass-backend/internal/reports"
 	"green-compass-backend/internal/updates"
 	"green-compass-backend/internal/users"
 	"green-compass-backend/pkg/clock"
 	"green-compass-backend/pkg/database"
 	"green-compass-backend/pkg/httpx"
 	"green-compass-backend/pkg/logging"
+	"green-compass-backend/pkg/storage"
 )
 
 const serviceName = "green-compass-api"
@@ -110,6 +113,12 @@ func run() error {
 
 	contextSvc := gcctx.NewService(preferencesSvc, placeSvc, updatesSvc, logger)
 	gcctx.NewHandler(contextSvc).RegisterRoutes(router, auth.Middleware(authSvc))
+
+	observationsSvc := observations.NewService(observations.NewRepository(pool), storage.NewMemoryStore(), logger)
+	observations.NewHandler(observationsSvc, authSvc).RegisterRoutes(router)
+
+	reportsSvc := reports.NewService(reports.NewRepository(observations.NewRepository(pool)), logger)
+	reports.NewHandler(reportsSvc, authSvc).RegisterRoutes(router)
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)),
