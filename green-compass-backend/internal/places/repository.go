@@ -103,6 +103,31 @@ func (r *Repository) Nearby(ctx context.Context, lat, lon, radiusM float64, limi
 	return result, rows.Err()
 }
 
+func (r *Repository) Search(ctx context.Context, query string, limit int) ([]Place, error) {
+	rows, err := r.q.Query(ctx, `
+		SELECT `+placeColumns+`
+		FROM places
+		WHERE $1::text = '' OR name ILIKE '%' || $1 || '%'
+		ORDER BY created_at DESC
+		LIMIT $2`,
+		query, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var places []Place
+	for rows.Next() {
+		var p Place
+		if err := rows.Scan(&p.ID, &p.Name, &p.PlaceType, &p.Lat, &p.Lon,
+			&p.ExternalCode, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			return nil, err
+		}
+		places = append(places, p)
+	}
+	return places, rows.Err()
+}
+
 func mapReadError(err error) error {
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ErrNotFound
