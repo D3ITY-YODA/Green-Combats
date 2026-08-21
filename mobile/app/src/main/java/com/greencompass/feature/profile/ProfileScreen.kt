@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -20,11 +21,15 @@ import com.greencompass.core.ui.GreenCompassColors
 data class ProfileMenuItem(val title: String, val subtitle: String, val icon: ImageVector)
 
 @Composable
-fun ProfileScreen(onOpenPlaces: () -> Unit) {
+fun ProfileScreen(
+    onOpenPlaces: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenHelp: () -> Unit,
+    onOpenAbout: () -> Unit,
+    onOpenSwitcher: () -> Unit
+) {
     val menuItems = listOf(
         ProfileMenuItem("Saved places", "4 places", Icons.Outlined.Place),
-        ProfileMenuItem("Interests", "3 selected", Icons.Outlined.Star),
-        ProfileMenuItem("Update history", "12 updates", Icons.Outlined.History),
         ProfileMenuItem("Settings", "", Icons.Outlined.Settings),
         ProfileMenuItem("Help & support", "", Icons.Outlined.Help),
         ProfileMenuItem("About Green Compass", "", Icons.Outlined.Info)
@@ -34,11 +39,11 @@ fun ProfileScreen(onOpenPlaces: () -> Unit) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             item {
                 Row(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = androidx.compose.foundation.shape.CircleShape, color = GreenCompassColors.ForestGreen, modifier = Modifier.size(56.dp)) {
+                    Surface(shape = androidx.compose.foundation.shape.CircleShape, color = GreenCompassColors.ForestGreen, modifier = Modifier.size(56.dp).clickable { onOpenSwitcher() }) {
                         Box(contentAlignment = Alignment.Center) { Text(text = "JT", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
                     }
                     Spacer(Modifier.width(16.dp))
-                    Column {
+                    Column(modifier = Modifier.clickable { onOpenSwitcher() }) {
                         Text(text = "John Tabu", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = GreenCompassColors.Charcoal)
                         Text(text = "Lower Valley", fontSize = 14.sp, color = GreenCompassColors.MutedText)
                     }
@@ -52,7 +57,14 @@ fun ProfileScreen(onOpenPlaces: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 16.dp)
-                        .clickable { if (item.title == "Saved places") onOpenPlaces() },
+                        .clickable {
+                            when (item.title) {
+                                "Saved places" -> onOpenPlaces()
+                                "Settings" -> onOpenSettings()
+                                "Help & support" -> onOpenHelp()
+                                "About Green Compass" -> onOpenAbout()
+                            }
+                        },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(item.icon, contentDescription = null, tint = GreenCompassColors.Charcoal, modifier = Modifier.size(24.dp))
