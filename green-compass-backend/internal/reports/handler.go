@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"green-compass-backend/internal/auth"
+	"green-compass-backend/pkg/httpx"
 )
 
 type API interface {
@@ -37,7 +38,7 @@ func (h *Handler) RegisterRoutes(r gin.IRouter) {
 func (h *Handler) listPending(c *gin.Context) {
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
@@ -55,7 +56,8 @@ func (h *Handler) listPending(c *gin.Context) {
 	for _, item := range items {
 		response = append(response, reportJSON(&item))
 	}
-	c.JSON(http.StatusOK, gin.H{"reports": response})
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"reports": response}, requestID))
 }
 
 func (h *Handler) get(c *gin.Context) {
@@ -65,7 +67,7 @@ func (h *Handler) get(c *gin.Context) {
 	}
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
@@ -74,7 +76,8 @@ func (h *Handler) get(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, reportJSON(report))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(reportJSON(report), requestID))
 }
 
 type verifyRequest struct {
@@ -88,17 +91,17 @@ func (h *Handler) verify(c *gin.Context) {
 	}
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
 	var req verifyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 	if req.Status == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "status is required"})
+		httpx.HandleError(c, httpx.InvalidParam("status", "status is required"))
 		return
 	}
 
@@ -107,7 +110,8 @@ func (h *Handler) verify(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, reportJSON(report))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(reportJSON(report), requestID))
 }
 
 func pathID(c *gin.Context) (uuid.UUID, bool) {
@@ -172,12 +176,12 @@ func reportJSON(r *Report) gin.H {
 func writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrInvalidData):
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httpx.HandleError(c, httpx.ErrBadRequest)
 	case errors.Is(err, ErrNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": "report not found"})
+		httpx.HandleError(c, httpx.ErrNotFound)
 	case errors.Is(err, ErrNotAllowed):
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		httpx.HandleError(c, httpx.ErrForbidden)
 	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		httpx.HandleError(c, httpx.ErrInternal)
 	}
 }

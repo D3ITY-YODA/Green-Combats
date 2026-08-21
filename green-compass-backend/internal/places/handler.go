@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"green-compass-backend/internal/auth"
+	"green-compass-backend/pkg/httpx"
 )
 
 type API interface {
@@ -46,12 +47,12 @@ type placeRequest struct {
 func (h *Handler) create(c *gin.Context) {
 	var req placeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok || req.Name == nil || req.PlaceType == nil || req.Lat == nil || req.Lon == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "name, place_type, lat, and lon are required"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "name, place_type, lat, and lon are required"))
 		return
 	}
 	p, err := h.svc.Create(c.Request.Context(), CreateInput{
@@ -62,7 +63,8 @@ func (h *Handler) create(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, placeJSON(p))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusCreated, httpx.Success(placeJSON(p), requestID))
 }
 
 func (h *Handler) byID(c *gin.Context) {
@@ -75,7 +77,8 @@ func (h *Handler) byID(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, placeJSON(p))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(placeJSON(p), requestID))
 }
 
 func (h *Handler) nearby(c *gin.Context) {
@@ -106,7 +109,8 @@ func (h *Handler) nearby(c *gin.Context) {
 		item["distance_m"] = result[i].DistanceMeters
 		response = append(response, item)
 	}
-	c.JSON(http.StatusOK, gin.H{"places": response})
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"places": response}, requestID))
 }
 
 func (h *Handler) update(c *gin.Context) {
@@ -116,16 +120,16 @@ func (h *Handler) update(c *gin.Context) {
 	}
 	var req placeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 	if req.PlaceType != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "place_type cannot be changed"})
+		httpx.HandleError(c, httpx.InvalidParam("place_type", "place_type cannot be changed"))
 		return
 	}
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 	p, err := h.svc.Update(c.Request.Context(), id, UpdateInput{Name: req.Name, Lat: req.Lat, Lon: req.Lon}, Caller{UserID: identity.UserID, IsPlatformAdmin: identity.IsPlatformAdmin})
@@ -133,7 +137,8 @@ func (h *Handler) update(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, placeJSON(p))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(placeJSON(p), requestID))
 }
 
 func pathID(c *gin.Context) (uuid.UUID, bool) {
@@ -182,12 +187,12 @@ func placeJSON(p *Place) gin.H {
 func writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrInvalidData):
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httpx.HandleError(c, httpx.ErrBadRequest)
 	case errors.Is(err, ErrNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": "place not found"})
+		httpx.HandleError(c, httpx.ErrNotFound)
 	case errors.Is(err, ErrNotAllowed):
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		httpx.HandleError(c, httpx.ErrForbidden)
 	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		httpx.HandleError(c, httpx.ErrInternal)
 	}
 }
