@@ -1,0 +1,27 @@
+get:
+  tags: [users]
+  summary: List users (admin only)
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+    - name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+  responses:
+    '200':
+      description: User list
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas.yaml#/PaginatedUsers'
+    '401':
+      $ref: '../components/schemas.yaml#/ErrorResponse'
+    '403':
+      $ref: '../components/schemas.yaml#/ErrorResponse'

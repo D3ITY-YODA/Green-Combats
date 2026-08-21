@@ -1,0 +1,89 @@
+preferences:
+  get:
+    tags: [preferences]
+    summary: List saved places
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Saved places
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+  post:
+    tags: [preferences]
+    summary: Save a place
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [place_id]
+            properties:
+              place_id:
+                type: string
+                format: uuid
+              label:
+                type: string
+    responses:
+      '200':
+        description: Place saved
+      '400':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+  /{place_id}:
+    delete:
+      tags: [preferences]
+      summary: Remove a saved place
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: place_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Removed
+        '404':
+          $ref: '../components/schemas.yaml#/ErrorResponse'
+
+    /primary:
+      put:
+        tags: [preferences]
+        summary: Set a saved place as primary
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: place_id
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+        responses:
+          '200':
+            description: Primary set
+          '404':
+            $ref: '../components/schemas.yaml#/ErrorResponse'
+
+context:
+  get:
+    tags: [context]
+    summary: Get user's current context (Today screen)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: User context with relevant updates
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ContextResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
