@@ -10,7 +10,7 @@ endif
 GC_DEV_PG_PORT ?= 5432
 GC_TEST_DATABASE_URL ?= postgres://greencompass:greencompass@127.0.0.1:$(GC_DEV_PG_PORT)/greencompass?sslmode=disable
 
-.PHONY: run test lint fmt vet tidy build test-integration migrate-up migrate-down migrate-status dev-up dev-down docker-build clean
+.PHONY: run test lint fmt vet tidy build test-integration ci-test migrate-up migrate-down migrate-status dev-up dev-down docker-build clean
 
 run:
 	$(GO) run ./cmd/api
@@ -20,6 +20,9 @@ test:
 
 test-integration:
 	GC_TEST_DATABASE_URL=$(GC_TEST_DATABASE_URL) $(GO) test -race -count=1 -run Integration ./...
+
+ci-test: dev-up
+	GC_TEST_DATABASE_URL=$(GC_TEST_DATABASE_URL) $(GO) test -race -count=1 ./...
 
 MIGRATE_DSN ?= postgres://greencompass:greencompass@127.0.0.1:$(GC_DEV_PG_PORT)/greencompass?sslmode=disable
 MIGRATE_STEPS ?= 0
