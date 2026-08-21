@@ -13,20 +13,6 @@ import (
 	"green-compass-backend/pkg/database"
 )
 
-func testPool(t *testing.T) *database.Pool {
-	t.Helper()
-	url := os.Getenv("GC_TEST_DATABASE_URL")
-	if url == "" {
-		t.Skip("GC_TEST_DATABASE_URL not set; skipping integration test")
-	}
-	pool, err := database.Connect(context.Background(), database.Options{URL: url})
-	if err != nil {
-		t.Fatalf("Connect() unexpected error: %v", err)
-	}
-	t.Cleanup(pool.Close)
-	return pool
-}
-
 func isolatedPool(t *testing.T) *database.Pool {
 	t.Helper()
 	base := os.Getenv("GC_TEST_DATABASE_URL")
