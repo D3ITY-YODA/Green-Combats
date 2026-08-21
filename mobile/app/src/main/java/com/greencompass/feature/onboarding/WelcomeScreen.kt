@@ -1,105 +1,73 @@
 package com.greencompass.feature.onboarding
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.greencompass.core.ui.AppSpacing
 import com.greencompass.core.ui.GreenCompassColors
+import com.greencompass.core.ui.GreenCompassTypography
+import com.greencompass.core.ui.PrimaryButton
+import com.greencompass.core.ui.TextLinkButton
 
 @Composable
-fun WelcomeScreen(
-    onGetStarted: () -> Unit,
-    onChooseLanguage: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = GreenCompassColors.WarmWhite
+fun WelcomeScreen(onGetStarted: () -> Unit, onChooseLanguage: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = AppSpacing.lg).padding(top = AppSpacing.xxxl),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .padding(bottom = 32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "🌿", fontSize = 48.sp)
-            }
+        Spacer(modifier = Modifier.weight(1f))
 
-            Text(
-                text = "Green Compass",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = GreenCompassColors.DeepForest,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+        // Clean, built-in compass icon (88dp)
+        Icon(
+            imageVector = Icons.Outlined.Explore,
+            contentDescription = "Green Compass Logo",
+            tint = GreenCompassColors.ForestGreen,
+            modifier = Modifier.size(88.dp)
+        )
 
-            Text(
-                text = "Know Your Place.\nMove with Change.",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = GreenCompassColors.Charcoal,
-                textAlign = TextAlign.Center,
-                lineHeight = 40.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+        Text(
+            text = "Green Compass",
+            style = GreenCompassTypography.titleLarge,
+            color = GreenCompassColors.Charcoal,
+            modifier = Modifier.padding(bottom = AppSpacing.sm)
+        )
 
-            Text(
-                text = "Clear environmental updates for the places\nthat matter to you.",
-                fontSize = 16.sp,
-                color = GreenCompassColors.MutedText,
-                textAlign = TextAlign.Center,
-                lineHeight = 24.sp,
-                modifier = Modifier.padding(bottom = 48.dp)
-            )
+        Text(
+            text = "Know Your Place.\nMove with Change.",
+            style = GreenCompassTypography.headlineLarge,
+            color = GreenCompassColors.Charcoal,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = AppSpacing.md)
+        )
 
-            Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = "Clear environmental updates for the places\nthat matter to you.",
+            style = GreenCompassTypography.bodyLarge,
+            color = GreenCompassColors.MutedText,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = AppSpacing.huge)
+        )
 
-            Button(
-                onClick = onGetStarted,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = GreenCompassColors.ForestGreen,
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "Get started",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+        Spacer(modifier = Modifier.weight(1f))
 
-            Spacer(modifier = Modifier.height(16.dp))
+        PrimaryButton(text = "Get started", onClick = onGetStarted, modifier = Modifier.padding(bottom = AppSpacing.sm))
+        TextLinkButton(text = "Choose language", onClick = onChooseLanguage)
 
-            TextButton(
-                onClick = onChooseLanguage,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Choose language",
-                    fontSize = 15.sp,
-                    color = GreenCompassColors.ForestGreen,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-        }
+        Spacer(modifier = Modifier.height(AppSpacing.xxl))
     }
 }
