@@ -66,27 +66,32 @@ func TestRepository_Nearby_Integration(t *testing.T) {
 	}
 
 	t.Run("orders by real distance and excludes custom places", func(t *testing.T) {
-		results, err := repo.Nearby(ctx, -1.2921, 36.8219, 600_000, 10)
+		results, err := repo.Nearby(ctx, -1.2921, 36.8219, 600_000, 100)
 		if err != nil {
 			t.Fatalf("Nearby: %v", err)
 		}
-		if len(results) < 3 {
-			t.Fatalf("got %d results, want at least the 3 seeded official places", len(results))
+
+		seeded := map[string]bool{}
+		for _, p := range seed {
+			seeded[p.Name] = true
 		}
 
-		var names []string
+		var order []string
 		for _, r := range results {
-			names = append(names, r.Name)
+			if !seeded[r.Name] {
+				continue
+			}
 			if r.PlaceType == places.TypeCustom {
 				t.Errorf("custom place %q leaked into nearby results", r.Name)
 			}
 			if r.DistanceMeters <= 0 {
 				t.Errorf("place %q has non-positive distance %f", r.Name, r.DistanceMeters)
 			}
+			order = append(order, r.Name)
 		}
 
 		nairobiIdx, kisumuIdx, mombasaIdx := -1, -1, -1
-		for i, n := range names {
+		for i, n := range order {
 			switch {
 			case contains(n, "Nairobi CBD"):
 				nairobiIdx = i
@@ -97,20 +102,20 @@ func TestRepository_Nearby_Integration(t *testing.T) {
 			}
 		}
 		if nairobiIdx == -1 || kisumuIdx == -1 || mombasaIdx == -1 {
-			t.Fatalf("missing seeded places in results: %v", names)
+			t.Fatalf("missing seeded places in results: %v", order)
 		}
 		if nairobiIdx > kisumuIdx || kisumuIdx > mombasaIdx {
-			t.Errorf("results not ordered by distance from Nairobi: %v", names)
+			t.Errorf("results not ordered by distance from Nairobi: %v", order)
 		}
 	})
 
 	t.Run("radius filter excludes far places", func(t *testing.T) {
-		results, err := repo.Nearby(ctx, -1.2921, 36.8219, 300_000, 10)
+		results, err := repo.Nearby(ctx, -1.2921, 36.8219, 300_000, 100)
 		if err != nil {
 			t.Fatalf("Nearby: %v", err)
 		}
 		for _, r := range results {
-			if contains(r.Name, "Mombasa") {
+			if contains(r.Name, "Mombasa Island") && seededName(seed, r.Name) {
 				t.Error("Mombasa returned within 300km radius of Nairobi")
 			}
 			if r.DistanceMeters > 300_000 {
@@ -179,4 +184,13 @@ func contains(s, substr string) bool {
 func uniqueName(t *testing.T, base string) string {
 	t.Helper()
 	return base + " " + uuid.NewString()[:8]
+}
+
+func seededName(seed []places.Place, name string) bool {
+	for _, p := range seed {
+		if p.Name == name {
+			return true
+		}
+	}
+	return false
 }

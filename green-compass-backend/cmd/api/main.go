@@ -17,6 +17,8 @@ import (
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/config"
 	"green-compass-backend/internal/health"
+	"green-compass-backend/internal/places"
+	"green-compass-backend/internal/preferences"
 	"green-compass-backend/internal/users"
 	"green-compass-backend/pkg/clock"
 	"green-compass-backend/pkg/database"
@@ -94,6 +96,9 @@ func run() error {
 	healthService := health.NewService(version, clock.New())
 	health.NewHandler(healthService).RegisterRoutes(router)
 	auth.NewHandler(authSvc).RegisterRoutes(router)
+	placeSvc := places.NewService(places.NewRepository(pool))
+	places.NewHandler(placeSvc, authSvc).RegisterRoutes(router)
+	preferences.NewHandler(preferences.NewService(preferences.NewRepository(pool))).RegisterRoutes(router, authSvc)
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)),
