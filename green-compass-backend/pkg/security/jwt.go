@@ -12,6 +12,13 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 
+// AccessTokenClaims deliberately carries only the user id — no roles, org
+// memberships, or trust status. Permissions are resolved from the database at
+// request time (see internal/permissions) so that revocation and institutional
+// status changes (org verified -> rejected, admin demoted) take effect
+// immediately instead of living on for the life of the token. Do not embed
+// authorization data here; it would reintroduce stale-permission bugs for up
+// to the access-token TTL.
 type AccessTokenClaims struct {
 	UserID string `json:"uid"`
 	jwt.RegisteredClaims
