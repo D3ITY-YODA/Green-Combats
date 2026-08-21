@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.greencompass.feature.explore.*
 import com.greencompass.feature.onboarding.*
 import com.greencompass.feature.today.TodayRoute
-import com.greencompass.feature.explore.ExploreScreen
 
 @Composable
 fun AppNavHost() {
@@ -155,7 +155,25 @@ fun AppNavHost() {
             TodayRoute()
         }
         composable<AppRoute.Explore> {
-            ExploreScreen()
+            ExploreScreen(onNavigate = { route -> navController.navigate(route) })
+        }
+        composable<AppRoute.LocalOutlook> {
+            LocalOutlookScreen(onBack = { navController.popBackStack() })
+        }
+        composable<AppRoute.SeasonalInformation> {
+            SeasonalInformationScreen(onBack = { navController.popBackStack() })
+        }
+        composable<AppRoute.WaterOutlook> {
+            WaterOutlookScreen(onBack = { navController.popBackStack() })
+        }
+        composable<AppRoute.LandEcosystems> {
+            LandEcosystemsScreen(onBack = { navController.popBackStack() })
+        }
+        composable<AppRoute.FoodAgriculture> {
+            FoodAgricultureScreen(onBack = { navController.popBackStack() })
+        }
+        composable<AppRoute.CommunityUpdates> {
+            CommunityUpdatesScreen(onBack = { navController.popBackStack() })
         }
     }
 }
