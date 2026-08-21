@@ -3,6 +3,7 @@ package httpx
 import (
 	"errors"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -58,12 +59,12 @@ func (e *AppError) Error() string {
 
 // Error constructors
 var (
-	ErrUnauthorized = &AppError{Code: "UNAUTHORIZED", Message: "unauthorized", Status: http.StatusUnauthorized}
-	ErrForbidden    = &AppError{Code: "FORBIDDEN", Message: "forbidden", Status: http.StatusForbidden}
-	ErrNotFound     = &AppError{Code: "NOT_FOUND", Message: "resource not found", Status: http.StatusNotFound}
-	ErrBadRequest   = &AppError{Code: "BAD_REQUEST", Message: "bad request", Status: http.StatusBadRequest}
-	ErrInternal     = &AppError{Code: "INTERNAL_ERROR", Message: "internal server error", Status: http.StatusInternalServerError}
-	ErrConflict     = &AppError{Code: "CONFLICT", Message: "resource conflict", Status: http.StatusConflict}
+	ErrUnauthorized    = &AppError{Code: "UNAUTHORIZED", Message: "unauthorized", Status: http.StatusUnauthorized}
+	ErrForbidden       = &AppError{Code: "FORBIDDEN", Message: "forbidden", Status: http.StatusForbidden}
+	ErrNotFound        = &AppError{Code: "NOT_FOUND", Message: "resource not found", Status: http.StatusNotFound}
+	ErrBadRequest      = &AppError{Code: "BAD_REQUEST", Message: "bad request", Status: http.StatusBadRequest}
+	ErrInternal        = &AppError{Code: "INTERNAL_ERROR", Message: "internal server error", Status: http.StatusInternalServerError}
+	ErrConflict        = &AppError{Code: "CONFLICT", Message: "resource conflict", Status: http.StatusConflict}
 	ErrTooManyRequests = &AppError{Code: "RATE_LIMITED", Message: "too many requests", Status: http.StatusTooManyRequests}
 )
 

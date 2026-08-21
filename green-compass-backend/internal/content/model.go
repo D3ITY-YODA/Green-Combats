@@ -7,18 +7,18 @@ import (
 )
 
 type Content struct {
-	ID              uuid.UUID
-	PlaceID         uuid.UUID
-	GeneratedAt     time.Time
-	PeriodStart     time.Time
-	PeriodEnd       time.Time
-	ContentType     string // today, forecast, alert
-	Language        string // e.g. "en", "sw"
-	Headline        string
-	BodyText        string
-	CallToAction    *string
+	ID               uuid.UUID
+	PlaceID          uuid.UUID
+	GeneratedAt      time.Time
+	PeriodStart      time.Time
+	PeriodEnd        time.Time
+	ContentType      string // today, forecast, alert
+	Language         string // e.g. "en", "sw"
+	Headline         string
+	BodyText         string
+	CallToAction     *string
 	SourceIndicators []uuid.UUID
-	CreatedAt       time.Time
+	CreatedAt        time.Time
 }
 
 type GenerateRequest struct {
@@ -34,10 +34,10 @@ type GenerateRequest struct {
 }
 
 type AssessmentData struct {
-	UrgencyScore     int
-	ConfidenceScore  int
-	AffectedGroups   []string
-	Summary          string
+	UrgencyScore    int
+	ConfidenceScore int
+	AffectedGroups  []string
+	Summary         string
 }
 
 type IndicatorData struct {

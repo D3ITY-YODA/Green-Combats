@@ -144,7 +144,7 @@ func (h *Handler) SourceCallback(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, httpx.Success(gin.H{
-		"source":  sourceKey,
+		"source":   sourceKey,
 		"received": true,
 	}, httpx.GetRequestID(c)))
 }

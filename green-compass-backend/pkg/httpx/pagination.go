@@ -1,7 +1,5 @@
 package httpx
 
-
-
 // PaginationParams holds request pagination parameters
 type PaginationParams struct {
 	Page     int
@@ -35,9 +33,9 @@ func ValidatePagination(page, pageSize int) PaginationParams {
 // CalculatePaginationMeta computes pagination metadata
 func CalculatePaginationMeta(page, pageSize, total int) *PaginationMeta {
 	return &PaginationMeta{
-		Page:     page,
-		PageSize: pageSize,
-		Total:    total,
+		Page:       page,
+		PageSize:   pageSize,
+		Total:      total,
 		NextCursor: "",
 	}
 }

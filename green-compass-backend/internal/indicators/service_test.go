@@ -1,26 +1,14 @@
 package indicators
 
 import (
-	"context"
 	"log/slog"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+
 	"green-compass-backend/internal/normalization"
 )
-
-type mockNormRepo struct {
-	observations []normalization.CanonicalObservation
-}
-
-func (m *mockNormRepo) ListCanonicalObservations(ctx context.Context, placeID, sourceID uuid.UUID, from, to time.Time) ([]normalization.CanonicalObservation, error) {
-	return m.observations, nil
-}
-
-func newMockNormRepo(obs []normalization.CanonicalObservation) *mockNormRepo {
-	return &mockNormRepo{observations: obs}
-}
 
 func TestRainIntensityTrend(t *testing.T) {
 	tests := []struct {

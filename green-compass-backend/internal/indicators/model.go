@@ -7,30 +7,30 @@ import (
 )
 
 type Definition struct {
-	ID               uuid.UUID
-	Code             string
-	DisplayName      string
-	Category         string // weather, water, agriculture, air_quality
-	SourceVariables  []string
-	Description      string
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID              uuid.UUID
+	Code            string
+	DisplayName     string
+	Category        string // weather, water, agriculture, air_quality
+	SourceVariables []string
+	Description     string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 type Indicator struct {
-	ID                 uuid.UUID
-	PlaceID            uuid.UUID
-	IndicatorID        uuid.UUID
-	ComputedAt         time.Time
-	PeriodStart        time.Time
-	PeriodEnd          time.Time
-	Value              float64
-	Unit               string
-	Trend              *string // "increasing", "stable", "decreasing"
-	TrendConfidence    *float64
-	DataPointsCount    int
-	Metadata           map[string]interface{}
-	CreatedAt          time.Time
+	ID              uuid.UUID
+	PlaceID         uuid.UUID
+	IndicatorID     uuid.UUID
+	ComputedAt      time.Time
+	PeriodStart     time.Time
+	PeriodEnd       time.Time
+	Value           float64
+	Unit            string
+	Trend           *string // "increasing", "stable", "decreasing"
+	TrendConfidence *float64
+	DataPointsCount int
+	Metadata        map[string]interface{}
+	CreatedAt       time.Time
 }
 
 type IndicatorWithDefinition struct {

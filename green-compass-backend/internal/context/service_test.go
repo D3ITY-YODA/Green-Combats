@@ -49,10 +49,10 @@ func TestResolveContext_PrimaryPlace(t *testing.T) {
 	stub := &stubPreferences{
 		places: []preferences.SavedPlace{
 			{
-				Place: places.Place{ID: placeID, Name: "Nairobi", PlaceType: "community", Lat: -1.2, Lon: 36.8},
-				Label: &label,
+				Place:     places.Place{ID: placeID, Name: "Nairobi", PlaceType: "community", Lat: -1.2, Lon: 36.8},
+				Label:     &label,
 				IsPrimary: true,
-				SavedAt: time.Now(),
+				SavedAt:   time.Now(),
 			},
 		},
 	}

@@ -35,10 +35,10 @@ type NormalizationRepository interface {
 }
 
 type Service struct {
-	repo              RunRepository
-	registry          *connectors.Registry
-	normService       NormalizationService
-	normRepo          NormalizationRepository
+	repo        RunRepository
+	registry    *connectors.Registry
+	normService NormalizationService
+	normRepo    NormalizationRepository
 }
 
 func NewService(repo RunRepository, registry *connectors.Registry, normService NormalizationService, normRepo NormalizationRepository) *Service {
@@ -166,7 +166,7 @@ func (s *Service) Ingest(ctx context.Context, req IngestRequest) (*RunResult, er
 			s.normService = nil // Disable normalization for subsequent runs if it fails
 		} else if len(normalized) > 0 {
 			if err := s.normRepo.Store(ctx, normalized); err != nil {
-				// Log error but don't fail the ingestion
+				s.normRepo = nil
 			}
 		}
 	}

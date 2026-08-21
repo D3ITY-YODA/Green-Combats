@@ -2,7 +2,6 @@ package httpx
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -68,20 +67,4 @@ func CORSMiddleware(opts CORSOptions) gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-// parseAllowedOrigins parses a comma-separated string of origins.
-func parseAllowedOrigins(raw string) []string {
-	if raw == "" {
-		return []string{"*"}
-	}
-	parts := strings.Split(raw, ",")
-	out := make([]string, 0, len(parts))
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			out = append(out, p)
-		}
-	}
-	return out
 }

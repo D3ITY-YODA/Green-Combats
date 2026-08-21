@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/pkg/httpx"
 )

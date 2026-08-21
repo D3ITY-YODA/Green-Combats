@@ -34,10 +34,10 @@ func newMockAssessmentRepo() *mockAssessmentRepo {
 
 func TestComputeUrgency(t *testing.T) {
 	tests := []struct {
-		name            string
-		indicators      []IndicatorSignal
-		wantUrgencyMin  int
-		wantUrgencyMax  int
+		name           string
+		indicators     []IndicatorSignal
+		wantUrgencyMin int
+		wantUrgencyMax int
 	}{
 		{
 			name: "high rainfall urgency",
@@ -79,8 +79,8 @@ func TestComputeUrgency(t *testing.T) {
 			wantUrgencyMax: 100,
 		},
 		{
-			name: "no indicators",
-			indicators: []IndicatorSignal{},
+			name:           "no indicators",
+			indicators:     []IndicatorSignal{},
 			wantUrgencyMin: 0,
 			wantUrgencyMax: 0,
 		},

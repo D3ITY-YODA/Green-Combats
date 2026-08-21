@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+
 	"green-compass-backend/pkg/httpx"
 )
 
@@ -63,7 +64,7 @@ func (s *Service) List(ctx context.Context, req ListRequest) (*ListResponse, err
 		Total:   total,
 		Page:    req.Page,
 		Limit:   req.Limit,
-		HasNext: req.Page < (total + req.Limit - 1) / req.Limit,
+		HasNext: req.Page < (total+req.Limit-1)/req.Limit,
 	}, nil
 }
 
@@ -84,7 +85,7 @@ func (s *Service) Explore(ctx context.Context, req ExploreRequest) (*ExploreResp
 		Total:      total,
 		Page:       req.Page,
 		Limit:      req.Limit,
-		HasNext:    req.Page < (total + req.Limit - 1) / req.Limit,
+		HasNext:    req.Page < (total+req.Limit-1)/req.Limit,
 	}, nil
 }
 

@@ -14,14 +14,14 @@ import (
 // Registry collects counters and histograms and exposes them in
 // Prometheus text exposition format at /metrics.
 type Registry struct {
-	mu        sync.Mutex
-	counters  map[string]*counter
+	mu         sync.Mutex
+	counters   map[string]*counter
 	histograms map[string]*histogram
-	startedAt time.Time
+	startedAt  time.Time
 }
 
 type counter struct {
-	help string
+	help   string
 	labels map[string]uint64 // label-value -> count
 }
 

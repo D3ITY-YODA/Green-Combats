@@ -28,7 +28,7 @@ func NewHandler(svc API) *Handler {
 func (h *Handler) RegisterRoutes(router *gin.Engine, authMiddleware gin.HandlerFunc) {
 	group := router.Group("/v1")
 	group.Use(authMiddleware)
-	group.GET("/context/today", h.GetToday)                          // legacy
+	group.GET("/context/today", h.GetToday)                         // legacy
 	group.GET("/context/places/:place_id/today", h.GetTodayByPlace) // spec: /places/{placeID}/today
 	group.GET("/context/places/:place_id", h.GetContext)            // spec: /places/{placeID}/context
 }

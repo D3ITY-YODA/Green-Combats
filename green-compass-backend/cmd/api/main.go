@@ -15,10 +15,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"green-compass-backend/internal/audit"
-	gcctx "green-compass-backend/internal/context"
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/config"
 	"green-compass-backend/internal/console"
+	gcctx "green-compass-backend/internal/context"
 	"green-compass-backend/internal/health"
 	"green-compass-backend/internal/integrations"
 	"green-compass-backend/internal/notifications"

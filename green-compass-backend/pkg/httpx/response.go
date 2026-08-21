@@ -5,21 +5,21 @@ import (
 )
 
 type Envelope struct {
-	Data interface{} `json:"data"`
-	Meta *Meta       `json:"meta,omitempty"`
+	Data  interface{}  `json:"data"`
+	Meta  *Meta        `json:"meta,omitempty"`
 	Error *ErrorDetail `json:"error,omitempty"`
 }
 
 type Meta struct {
-	RequestID  string           `json:"request_id"`
-	Pagination *PaginationMeta  `json:"pagination,omitempty"`
-	Timestamp  time.Time        `json:"generated_at"`
+	RequestID  string          `json:"request_id"`
+	Pagination *PaginationMeta `json:"pagination,omitempty"`
+	Timestamp  time.Time       `json:"generated_at"`
 }
 
 type PaginationMeta struct {
-	Page       int `json:"page"`
-	PageSize   int `json:"page_size"`
-	Total      int `json:"total"`
+	Page       int    `json:"page"`
+	PageSize   int    `json:"page_size"`
+	Total      int    `json:"total"`
 	NextCursor string `json:"next_cursor,omitempty"`
 }
 

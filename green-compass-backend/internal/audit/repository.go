@@ -61,7 +61,6 @@ func (r *Repository) List(ctx context.Context, req ListRequest) ([]Entry, int, e
 	if req.ResourceID != nil {
 		countQuery += fmt.Sprintf(` AND resource_id = $%d`, paramIdx)
 		args = append(args, *req.ResourceID)
-		paramIdx++
 	}
 
 	var total int

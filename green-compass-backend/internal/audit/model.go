@@ -12,15 +12,15 @@ type Action string
 const (
 	ActionObservationVerified Action = "observation_verified"
 	ActionObservationRejected Action = "observation_rejected"
-	ActionContentPublished   Action = "content_published"
-	ActionUserCreated        Action = "user_created"
-	ActionUserDeactivated    Action = "user_deactivated"
-	ActionOrgCreated         Action = "org_created"
-	ActionOrgMemberAdded     Action = "org_member_added"
-	ActionOrgMemberRemoved   Action = "org_member_removed"
-	ActionSourceEnabled      Action = "source_enabled"
-	ActionSourceDisabled     Action = "source_disabled"
-	ActionConfigChanged      Action = "config_changed"
+	ActionContentPublished    Action = "content_published"
+	ActionUserCreated         Action = "user_created"
+	ActionUserDeactivated     Action = "user_deactivated"
+	ActionOrgCreated          Action = "org_created"
+	ActionOrgMemberAdded      Action = "org_member_added"
+	ActionOrgMemberRemoved    Action = "org_member_removed"
+	ActionSourceEnabled       Action = "source_enabled"
+	ActionSourceDisabled      Action = "source_disabled"
+	ActionConfigChanged       Action = "config_changed"
 )
 
 // Entry represents a single audit log record.

@@ -12,8 +12,8 @@ import (
 type RateLimiter struct {
 	mu      sync.Mutex
 	buckets map[string]*bucket
-	rate    float64   // tokens per second
-	burst   float64   // bucket capacity
+	rate    float64 // tokens per second
+	burst   float64 // bucket capacity
 	now     func() time.Time
 }
 

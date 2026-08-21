@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/sources"
@@ -73,9 +72,4 @@ func (h *Handler) ListRuns(c *gin.Context) {
 	c.JSON(http.StatusOK, httpx.Success(gin.H{
 		"runs": []interface{}{},
 	}, httpx.GetRequestID(c)))
-}
-
-// Helper to parse UUID safely
-func parseUUID(s string) (uuid.UUID, error) {
-	return uuid.Parse(s)
 }

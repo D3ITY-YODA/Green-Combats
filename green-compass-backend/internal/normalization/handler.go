@@ -15,7 +15,7 @@ func NewHandler(svc *Service) *Handler {
 }
 
 type NormalizeRequest struct {
-	SourceCode string  `json:"source_code" binding:"required"`
+	SourceCode string   `json:"source_code" binding:"required"`
 	RawRecord  RawInput `json:"raw_record" binding:"required"`
 }
 

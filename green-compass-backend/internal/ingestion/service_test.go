@@ -62,10 +62,10 @@ func TestService_Ingest_Validation(t *testing.T) {
 	now := time.Now().UTC()
 
 	tests := []struct {
-		name        string
-		req         ingestion.IngestRequest
-		wantErrIs   error
-		connector   connectors.Connector
+		name      string
+		req       ingestion.IngestRequest
+		wantErrIs error
+		connector connectors.Connector
 	}{
 		{
 			name: "disabled source",

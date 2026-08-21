@@ -76,7 +76,7 @@ func (r *Repository) PollBatch(ctx context.Context, limit int) ([]Event, error) 
 	if err != nil {
 		return nil, fmt.Errorf("begin poll tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	rows, err := tx.Query(ctx, `
 		SELECT id, event_type, aggregate_type, aggregate_id, payload, status, attempts, available_at, created_at
@@ -135,7 +135,7 @@ func (r *Repository) MarkFailed(ctx context.Context, id uuid.UUID) error {
 
 // Dispatcher drains pending events through a handler with retry/backoff.
 type Dispatcher struct {
-	repo  *Repository
+	repo   *Repository
 	handle func(ctx context.Context, e Event) error
 }
 

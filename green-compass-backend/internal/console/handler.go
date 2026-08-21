@@ -15,8 +15,8 @@ import (
 
 // Handler wires institutional console routes onto existing services.
 type Handler struct {
-	sources   *sources.Service
-	projects  *projects.Service
+	sources  *sources.Service
+	projects *projects.Service
 }
 
 func NewHandler(sourcesSvc *sources.Service, projectsSvc *projects.Service) *Handler {

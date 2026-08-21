@@ -105,4 +105,3 @@ func (r *Repository) scanAssessment(ctx context.Context, query string, args ...i
 
 	return &a, nil
 }
-

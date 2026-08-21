@@ -127,7 +127,7 @@ func TestGetToday_Success(t *testing.T) {
 	}
 
 	var resp struct {
-		Data   struct {
+		Data struct {
 			Place struct {
 				ID        string `json:"id"`
 				Name      string `json:"name"`
