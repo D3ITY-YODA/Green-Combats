@@ -120,17 +120,3 @@ func scanObservations(rows pgx.Rows) ([]Observation, error) {
 	}
 	return result, rows.Err()
 }
-
-func mapWriteError(err error) error {
-	if err == nil {
-		return nil
-	}
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) && pgErr.Code == "23503" {
-		switch pgErr.ConstraintName {
-		case "observations_place_id_fkey":
-			return fmt.Errorf("place not found")
-		}
-	}
-	return err
-}

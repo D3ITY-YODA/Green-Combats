@@ -48,11 +48,11 @@ func TestFilterApplicableIndicators(t *testing.T) {
 	indID3 := uuid.New()
 
 	tests := []struct {
-		name       string
-		placeType  string
-		indicators []IndicatorData
-		rules      []*Rule
-		wantCount  int
+		name         string
+		placeType    string
+		indicators   []IndicatorData
+		rules        []*Rule
+		wantCount    int
 		wantFiltered int
 	}{
 		{
@@ -134,59 +134,59 @@ func TestThresholdChecking(t *testing.T) {
 	indID := uuid.New()
 
 	tests := []struct {
-		name           string
-		value          float64
-		minThreshold   *float64
-		maxThreshold   *float64
+		name               string
+		value              float64
+		minThreshold       *float64
+		maxThreshold       *float64
 		wantMeetsThreshold bool
 	}{
 		{
-			name:           "value above min threshold",
-			value:          5.0,
-			minThreshold:   floatPtr(3.0),
-			maxThreshold:   nil,
+			name:               "value above min threshold",
+			value:              5.0,
+			minThreshold:       floatPtr(3.0),
+			maxThreshold:       nil,
 			wantMeetsThreshold: true,
 		},
 		{
-			name:           "value below min threshold",
-			value:          2.0,
-			minThreshold:   floatPtr(3.0),
-			maxThreshold:   nil,
+			name:               "value below min threshold",
+			value:              2.0,
+			minThreshold:       floatPtr(3.0),
+			maxThreshold:       nil,
 			wantMeetsThreshold: false,
 		},
 		{
-			name:           "value below max threshold",
-			value:          4.0,
-			minThreshold:   nil,
-			maxThreshold:   floatPtr(5.0),
+			name:               "value below max threshold",
+			value:              4.0,
+			minThreshold:       nil,
+			maxThreshold:       floatPtr(5.0),
 			wantMeetsThreshold: true,
 		},
 		{
-			name:           "value above max threshold",
-			value:          6.0,
-			minThreshold:   nil,
-			maxThreshold:   floatPtr(5.0),
+			name:               "value above max threshold",
+			value:              6.0,
+			minThreshold:       nil,
+			maxThreshold:       floatPtr(5.0),
 			wantMeetsThreshold: false,
 		},
 		{
-			name:           "value within range",
-			value:          4.5,
-			minThreshold:   floatPtr(3.0),
-			maxThreshold:   floatPtr(5.0),
+			name:               "value within range",
+			value:              4.5,
+			minThreshold:       floatPtr(3.0),
+			maxThreshold:       floatPtr(5.0),
 			wantMeetsThreshold: true,
 		},
 		{
-			name:           "value outside range (too low)",
-			value:          2.5,
-			minThreshold:   floatPtr(3.0),
-			maxThreshold:   floatPtr(5.0),
+			name:               "value outside range (too low)",
+			value:              2.5,
+			minThreshold:       floatPtr(3.0),
+			maxThreshold:       floatPtr(5.0),
 			wantMeetsThreshold: false,
 		},
 		{
-			name:           "value outside range (too high)",
-			value:          5.5,
-			minThreshold:   floatPtr(3.0),
-			maxThreshold:   floatPtr(5.0),
+			name:               "value outside range (too high)",
+			value:              5.5,
+			minThreshold:       floatPtr(3.0),
+			maxThreshold:       floatPtr(5.0),
 			wantMeetsThreshold: false,
 		},
 	}

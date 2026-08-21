@@ -62,10 +62,10 @@ func TestService_Ingest_Validation(t *testing.T) {
 	now := time.Now().UTC()
 
 	tests := []struct {
-		name        string
-		req         ingestion.IngestRequest
-		wantErrIs   error
-		connector   connectors.Connector
+		name      string
+		req       ingestion.IngestRequest
+		wantErrIs error
+		connector connectors.Connector
 	}{
 		{
 			name: "disabled source",
@@ -130,7 +130,7 @@ func TestService_Ingest_Validation(t *testing.T) {
 				t.Fatalf("NewRegistry failed: %v", err)
 			}
 			repo := &mockRunRepo{}
-			svc := ingestion.NewService(repo, reg)
+			svc := ingestion.NewService(repo, reg, nil, nil)
 
 			_, err = svc.Ingest(context.Background(), tt.req)
 			if err == nil {
@@ -185,7 +185,7 @@ func TestService_Ingest_Success(t *testing.T) {
 		},
 	}
 
-	svc := ingestion.NewService(repo, reg)
+	svc := ingestion.NewService(repo, reg, nil, nil)
 	result, err := svc.Ingest(context.Background(), ingestion.IngestRequest{
 		Source: source,
 		Place:  place,
@@ -246,7 +246,7 @@ func TestService_Ingest_Deduplication(t *testing.T) {
 		},
 	}
 
-	svc := ingestion.NewService(repo, reg)
+	svc := ingestion.NewService(repo, reg, nil, nil)
 	result, err := svc.Ingest(context.Background(), ingestion.IngestRequest{
 		Source: source,
 		Place:  place,
@@ -291,7 +291,7 @@ func TestService_Ingest_ConnectorFetchError(t *testing.T) {
 		},
 	}
 
-	svc := ingestion.NewService(repo, reg)
+	svc := ingestion.NewService(repo, reg, nil, nil)
 	result, err := svc.Ingest(context.Background(), ingestion.IngestRequest{
 		Source: source,
 		Place:  place,

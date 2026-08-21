@@ -71,8 +71,8 @@ func TestVerifyPassword_TamperedHashRejected(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:   "flipped hash character",
-			mutate: func(s string) string { return flipLastB64Char(s) },
+			name:   "flipped key character",
+			mutate: func(s string) string { return flipKeyChar(s, 2) },
 		},
 		{
 			name:   "truncated hash",
@@ -168,13 +168,32 @@ func hashForTest(password string) (string, error) {
 	return security.HashPasswordWithParams(password, fastParams)
 }
 
-func flipLastB64Char(s string) string {
-	last := s[len(s)-1]
-	replacement := byte('A')
-	if last == 'A' {
-		replacement = 'B'
+// flipKeyChar flips a character at the given position within the
+// base64-encoded key portion (the last segment after the final '$').
+// This guarantees a bit-level change in the derived key bytes.
+func flipKeyChar(s string, keyOffset int) string {
+	// Find the last '$' to isolate the key portion
+	lastDollar := strings.LastIndex(s, "$")
+	if lastDollar < 0 || lastDollar+1+keyOffset >= len(s) {
+		// Fallback: flip a character near the end
+		idx := len(s) - 2
+		if idx < 0 {
+			idx = 0
+		}
+		ch := s[idx]
+		repl := byte('A')
+		if ch == 'A' {
+			repl = 'B'
+		}
+		return s[:idx] + string(repl) + s[idx+1:]
 	}
-	return s[:len(s)-1] + string(replacement)
+	idx := lastDollar + 1 + keyOffset
+	ch := s[idx]
+	repl := byte('A')
+	if ch == 'A' {
+		repl = 'B'
+	}
+	return s[:idx] + string(repl) + s[idx+1:]
 }
 
 func replaceParamField(encoded, newField string) string {

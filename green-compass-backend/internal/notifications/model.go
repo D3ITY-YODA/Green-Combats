@@ -10,9 +10,9 @@ import (
 type Channel string
 
 const (
-	ChannelPush Channel = "push"
-	ChannelSMS  Channel = "sms"
-	ChannelUSSD Channel = "ussd"
+	ChannelPush  Channel = "push"
+	ChannelSMS   Channel = "sms"
+	ChannelUSSD  Channel = "ussd"
 	ChannelEmail Channel = "email"
 )
 

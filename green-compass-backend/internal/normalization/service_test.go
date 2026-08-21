@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"green-compass-backend/internal/ingestion"
 	"green-compass-backend/internal/normalization"
 	"green-compass-backend/internal/sources"
 )
@@ -32,7 +31,7 @@ func TestService_Normalize_OpenMeteo(t *testing.T) {
 	}
 	encoded, _ := json.Marshal(payload)
 
-	raw := ingestion.RawRecord{
+	raw := normalization.RawInput{
 		ID:               rawID,
 		SourceID:         sourceID,
 		PlaceID:          placeID,
@@ -100,7 +99,7 @@ func TestService_Normalize_NASAPower(t *testing.T) {
 	}
 	encoded, _ := json.Marshal(payload)
 
-	raw := ingestion.RawRecord{
+	raw := normalization.RawInput{
 		ID:               rawID,
 		SourceID:         sourceID,
 		PlaceID:          placeID,
@@ -139,7 +138,7 @@ func TestService_Normalize_NASAPower_MissingSentinel(t *testing.T) {
 	}
 	encoded, _ := json.Marshal(payload)
 
-	raw := ingestion.RawRecord{Payload: encoded}
+	raw := normalization.RawInput{Payload: encoded}
 	obs, err := svc.Normalize(context.Background(), sources.CodeNASAPower, raw)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -155,7 +154,7 @@ func TestService_Normalize_Errors(t *testing.T) {
 	svc := normalization.NewService()
 
 	t.Run("unsupported source", func(t *testing.T) {
-		raw := ingestion.RawRecord{Payload: json.RawMessage(`{}`)}
+		raw := normalization.RawInput{Payload: json.RawMessage(`{}`)}
 		_, err := svc.Normalize(context.Background(), "unknown_source", raw)
 		if !errors.Is(err, normalization.ErrUnsupportedSource) {
 			t.Errorf("expected ErrUnsupportedSource, got %v", err)
@@ -163,7 +162,7 @@ func TestService_Normalize_Errors(t *testing.T) {
 	})
 
 	t.Run("malformed json payload", func(t *testing.T) {
-		raw := ingestion.RawRecord{Payload: json.RawMessage(`invalid-json`)}
+		raw := normalization.RawInput{Payload: json.RawMessage(`invalid-json`)}
 		_, err := svc.Normalize(context.Background(), sources.CodeOpenMeteo, raw)
 		if !errors.Is(err, normalization.ErrMalformedPayload) {
 			t.Errorf("expected ErrMalformedPayload, got %v", err)

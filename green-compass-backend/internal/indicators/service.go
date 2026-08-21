@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"green-compass-backend/internal/normalization"
 )
 
@@ -25,9 +26,9 @@ type NormalizationRepository interface {
 }
 
 type Service struct {
-	repo          indicatorRepo
-	normRepo      NormalizationRepository
-	logger        *slog.Logger
+	repo     indicatorRepo
+	normRepo NormalizationRepository
+	logger   *slog.Logger
 }
 
 func NewService(repo indicatorRepo, normRepo NormalizationRepository, logger *slog.Logger) *Service {

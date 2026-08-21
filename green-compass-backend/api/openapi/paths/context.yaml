@@ -1,89 +1,99 @@
+today:
+  get:
+    tags: [context]
+    summary: Today screen content for a place
+    description: Returns the current context and latest plain-language update for the place.
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: path, required: true, schema: { type: string, format: uuid } }
+    responses:
+      '200':
+        description: Today payload (place + update)
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/SuccessResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+      '404':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+placeContext:
+  get:
+    tags: [context]
+    summary: Context for a specific place
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: path, required: true, schema: { type: string, format: uuid } }
+    responses:
+      '200':
+        description: Place context
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/SuccessResponse'
+
+legacyToday:
+  get:
+    tags: [context]
+    summary: Resolve user's current context (legacy)
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: query, schema: { type: string, format: uuid } }
+    responses:
+      '200':
+        description: Resolved context
+
 preferences:
   get:
     tags: [preferences]
-    summary: List saved places
-    security:
-      - bearerAuth: []
+    summary: List the user's saved places
+    security: [{ bearerAuth: [] }]
     responses:
       '200':
         description: Saved places
-      '401':
-        $ref: '../components/schemas.yaml#/ErrorResponse'
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/SuccessResponse'
 
-  post:
+savedPlace:
+  put:
     tags: [preferences]
-    summary: Save a place
-    security:
-      - bearerAuth: []
+    summary: Save a place for the user
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      - { name: place_id, in: path, required: true, schema: { type: string, format: uuid } }
     requestBody:
-      required: true
       content:
         application/json:
           schema:
             type: object
-            required: [place_id]
             properties:
-              place_id:
-                type: string
-                format: uuid
-              label:
-                type: string
+              label: { type: string }
     responses:
-      '200':
+      '201':
         description: Place saved
-      '400':
+      '409':
         $ref: '../components/schemas.yaml#/ErrorResponse'
-
-  /{place_id}:
-    delete:
-      tags: [preferences]
-      summary: Remove a saved place
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: place_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Removed
-        '404':
-          $ref: '../components/schemas.yaml#/ErrorResponse'
-
-    /primary:
-      put:
-        tags: [preferences]
-        summary: Set a saved place as primary
-        security:
-          - bearerAuth: []
-        parameters:
-          - name: place_id
-            in: path
-            required: true
-            schema:
-              type: string
-              format: uuid
-        responses:
-          '200':
-            description: Primary set
-          '404':
-            $ref: '../components/schemas.yaml#/ErrorResponse'
-
-context:
-  get:
-    tags: [context]
-    summary: Get user's current context (Today screen)
-    security:
-      - bearerAuth: []
+  delete:
+    tags: [preferences]
+    summary: Remove a saved place
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: path, required: true, schema: { type: string, format: uuid } }
     responses:
       '200':
-        description: User context with relevant updates
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/ContextResponse'
-      '401':
-        $ref: '../components/schemas.yaml#/ErrorResponse'
+        description: Place removed
+
+primaryPlace:
+  put:
+    tags: [preferences]
+    summary: Set a saved place as primary
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: path, required: true, schema: { type: string, format: uuid } }
+    responses:
+      '200':
+        description: Primary updated

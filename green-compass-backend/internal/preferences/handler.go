@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"green-compass-backend/internal/auth"
+	"green-compass-backend/pkg/httpx"
 )
 
 type API interface {
@@ -33,7 +34,7 @@ func (h *Handler) RegisterRoutes(r gin.IRouter, authService auth.API) {
 func (h *Handler) list(c *gin.Context) {
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 	items, err := h.svc.List(c.Request.Context(), identity.UserID)
@@ -45,7 +46,7 @@ func (h *Handler) list(c *gin.Context) {
 	for _, item := range items {
 		response = append(response, gin.H{"id": item.ID, "name": item.Name, "place_type": item.PlaceType, "lat": item.Lat, "lon": item.Lon, "label": item.Label, "is_primary": item.IsPrimary, "saved_at": item.SavedAt})
 	}
-	c.JSON(http.StatusOK, gin.H{"places": response})
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"places": response}, httpx.GetRequestID(c)))
 }
 
 func (h *Handler) save(c *gin.Context) {
@@ -57,14 +58,14 @@ func (h *Handler) save(c *gin.Context) {
 		Label *string `json:"label"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 	if err := h.svc.Save(c.Request.Context(), identity.UserID, placeID, req.Label); err != nil {
 		writeError(c, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusCreated, httpx.Success(gin.H{"message": "place saved"}, httpx.GetRequestID(c)))
 }
 
 func (h *Handler) unsave(c *gin.Context) {
@@ -76,7 +77,7 @@ func (h *Handler) unsave(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"message": "place unsaved"}, httpx.GetRequestID(c)))
 }
 
 func (h *Handler) setPrimary(c *gin.Context) {
@@ -88,18 +89,18 @@ func (h *Handler) setPrimary(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"message": "primary place updated"}, httpx.GetRequestID(c)))
 }
 
 func requestIdentity(c *gin.Context) (uuid.UUID, auth.Identity, bool) {
 	placeID, err := uuid.Parse(c.Param("place_id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid place id"})
+		httpx.HandleError(c, httpx.InvalidParam("place_id", "invalid place id"))
 		return uuid.Nil, auth.Identity{}, false
 	}
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return uuid.Nil, auth.Identity{}, false
 	}
 	return placeID, identity, true
@@ -108,14 +109,14 @@ func requestIdentity(c *gin.Context) (uuid.UUID, auth.Identity, bool) {
 func writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrInvalidData):
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httpx.HandleError(c, httpx.ErrBadRequest)
 	case errors.Is(err, ErrPlaceNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": "place not found"})
+		httpx.HandleError(c, httpx.ErrNotFound)
 	case errors.Is(err, ErrNotSaved):
-		c.JSON(http.StatusNotFound, gin.H{"error": "saved place not found"})
+		httpx.HandleError(c, httpx.ErrNotFound)
 	case errors.Is(err, ErrSavedPlaceLimit):
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		httpx.HandleError(c, httpx.ErrConflict)
 	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		httpx.HandleError(c, httpx.ErrInternal)
 	}
 }

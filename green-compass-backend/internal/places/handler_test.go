@@ -32,6 +32,9 @@ func (s *stubPlaceAPI) Nearby(context.Context, float64, float64, float64, int) (
 func (s *stubPlaceAPI) Update(context.Context, uuid.UUID, places.UpdateInput, places.Caller) (*places.Place, error) {
 	return nil, nil
 }
+func (s *stubPlaceAPI) Search(context.Context, string, int) ([]places.Place, error) {
+	return nil, nil
+}
 
 func TestHandler_PublicPlaceRoutes(t *testing.T) {
 	gin.SetMode(gin.TestMode)

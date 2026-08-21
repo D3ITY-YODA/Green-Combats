@@ -29,10 +29,10 @@ type AssessmentRequest struct {
 }
 
 type IndicatorSignal struct {
-	IndicatorID uuid.UUID
-	Code        string
-	Value       float64
-	Trend       *string
+	IndicatorID    uuid.UUID
+	Code           string
+	Value          float64
+	Trend          *string
 	RelevanceScore float64
 }
 

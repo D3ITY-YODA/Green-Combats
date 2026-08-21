@@ -1,0 +1,60 @@
+smsInbound:
+  post:
+    tags: [integrations]
+    summary: Inbound SMS webhook
+    description: Receives inbound SMS from the provider. Requires valid X-Signature (HMAC-SHA256 of body).
+    security: []
+    parameters:
+      - { name: X-Signature, in: header, required: false, schema: { type: string } }
+    responses:
+      '200':
+        description: Received
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+smsDelivery:
+  post:
+    tags: [integrations]
+    summary: SMS delivery receipt webhook
+    security: []
+    responses:
+      '200':
+        description: Received
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+ussdSession:
+  post:
+    tags: [integrations]
+    summary: USSD session callback
+    security: []
+    responses:
+      '200':
+        description: Received
+
+pushReceipt:
+  post:
+    tags: [integrations]
+    summary: Push delivery receipt (FCM/APNS)
+    security: []
+    responses:
+      '200':
+        description: Received
+
+sourceCallback:
+  post:
+    tags: [integrations]
+    summary: External source callback
+    description: >-
+      Receives push-style callbacks from external data sources. Requires
+      signature validation, supports Idempotency-Key replay protection.
+    security: []
+    parameters:
+      - { name: source_key, in: path, required: true, schema: { type: string } }
+      - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      - { name: X-Signature, in: header, required: false, schema: { type: string } }
+    responses:
+      '200':
+        description: Received
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'

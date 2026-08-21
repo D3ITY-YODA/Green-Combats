@@ -15,10 +15,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"green-compass-backend/internal/audit"
-	gcctx "green-compass-backend/internal/context"
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/config"
+	"green-compass-backend/internal/console"
+	gcctx "green-compass-backend/internal/context"
 	"green-compass-backend/internal/health"
+	"green-compass-backend/internal/integrations"
 	"green-compass-backend/internal/notifications"
 	"green-compass-backend/internal/observations"
 	"green-compass-backend/internal/places"
@@ -26,12 +28,14 @@ import (
 	"green-compass-backend/internal/projects"
 	"green-compass-backend/internal/reporting"
 	"green-compass-backend/internal/reports"
+	"green-compass-backend/internal/sources"
 	"green-compass-backend/internal/updates"
 	"green-compass-backend/internal/users"
 	"green-compass-backend/pkg/clock"
 	"green-compass-backend/pkg/database"
 	"green-compass-backend/pkg/httpx"
 	"green-compass-backend/pkg/logging"
+	"green-compass-backend/pkg/metrics"
 	"green-compass-backend/pkg/storage"
 )
 
@@ -100,7 +104,17 @@ func run() error {
 	}
 
 	router := gin.New()
-	router.Use(gin.Recovery(), httpx.RequestLogger(logger, clock.New()), httpx.RequestIDMiddleware())
+	registry := metrics.NewRegistry()
+	router.Use(
+		gin.Recovery(),
+		httpx.RequestIDMiddleware(),
+		httpx.RequestLogger(logger, clock.New()),
+		metrics.Middleware(registry),
+		httpx.IdempotencyMiddleware(),
+		httpx.NewRateLimiter(120, 240).Middleware(), // 120 req/min per client, burst 240
+	)
+	router.GET("/metrics", metrics.Handler(registry))
+	router.Use(httpx.CORSMiddleware(httpx.CORSOptions{AllowedOrigins: cfg.CORS.AllowedOrigins}))
 
 	healthService := health.NewService(version, clock.New())
 	health.NewHandler(healthService).RegisterRoutes(router)
@@ -136,6 +150,12 @@ func run() error {
 
 	reportingSvc := reporting.NewService(reporting.NewRepository(pool))
 	reporting.NewHandler(reportingSvc).RegisterRoutes(router, auth.Middleware(authSvc))
+
+	sourcesSvc := sources.NewService(sources.NewRepository(pool))
+	projectListSvc := projects.NewService(projects.NewRepository(pool))
+	console.NewHandler(sourcesSvc, projectListSvc).RegisterRoutes(router, auth.Middleware(authSvc))
+
+	integrations.NewHandler("").RegisterRoutes(router)
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)),

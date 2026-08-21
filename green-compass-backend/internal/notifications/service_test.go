@@ -12,9 +12,9 @@ import (
 // --- Mock repository ---
 
 type mockRepo struct {
-	prefs       map[string]Preference
+	prefs         map[string]Preference
 	notifications []Notification
-	logs        []DeliveryLog
+	logs          []DeliveryLog
 }
 
 func newMockRepo() *mockRepo {

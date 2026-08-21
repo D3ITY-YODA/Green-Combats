@@ -39,10 +39,13 @@ func TestHandler_HealthReturnsOK(t *testing.T) {
 		t.Errorf("content-type = %q, want application/json", ct)
 	}
 
-	var body health.StatusResponse
-	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+	var envelope struct {
+		Data health.StatusResponse `json:"data"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &envelope); err != nil {
 		t.Fatalf("decode response body: %v\nbody: %s", err, rec.Body.String())
 	}
+	body := envelope.Data
 	if body.Status != health.StatusOK {
 		t.Errorf("status = %q, want %q", body.Status, health.StatusOK)
 	}
@@ -65,12 +68,14 @@ func TestHandler_UptimeAdvancesWithClock(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	var body health.StatusResponse
-	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+	var envelope struct {
+		Data health.StatusResponse `json:"data"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &envelope); err != nil {
 		t.Fatalf("decode response body: %v", err)
 	}
-	if body.UptimeSeconds != 120 {
-		t.Errorf("uptime_seconds = %d, want 120", body.UptimeSeconds)
+	if envelope.Data.UptimeSeconds != 120 {
+		t.Errorf("uptime_seconds = %d, want 120", envelope.Data.UptimeSeconds)
 	}
 }
 

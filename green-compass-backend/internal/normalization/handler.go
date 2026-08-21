@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"green-compass-backend/internal/ingestion"
 )
 
 type Handler struct {
@@ -17,8 +15,8 @@ func NewHandler(svc *Service) *Handler {
 }
 
 type NormalizeRequest struct {
-	SourceCode string             `json:"source_code" binding:"required"`
-	RawRecord  ingestion.RawRecord `json:"raw_record" binding:"required"`
+	SourceCode string   `json:"source_code" binding:"required"`
+	RawRecord  RawInput `json:"raw_record" binding:"required"`
 }
 
 func (h *Handler) Normalize(c *gin.Context) {

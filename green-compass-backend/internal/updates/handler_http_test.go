@@ -43,8 +43,8 @@ func (s *stubAuthAPI) SessionUser(_ context.Context, _ uuid.UUID) (*auth.Session
 }
 
 type stubUpdatesAPI struct {
-	listResp   *updates.ListResponse
-	listErr    error
+	listResp    *updates.ListResponse
+	listErr     error
 	exploreResp *updates.ExploreResponse
 	exploreErr  error
 
@@ -68,15 +68,19 @@ func (s *stubUpdatesAPI) Explore(_ context.Context, req updates.ExploreRequest) 
 	return s.exploreResp, nil
 }
 
+func (s *stubUpdatesAPI) GetByID(context.Context, uuid.UUID) (*updates.Update, error) {
+	return nil, updates.ErrNotFound
+}
+
+func (s *stubUpdatesAPI) Acknowledge(context.Context, uuid.UUID, uuid.UUID) error {
+	return nil
+}
+
 func newTestRouter(api updates.API, authAPI auth.API) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	updates.NewHandler(api).RegisterRoutes(router, auth.Middleware(authAPI))
 	return router
-}
-
-func testAuthHeader(userID uuid.UUID) map[string]string {
-	return map[string]string{"Authorization": "Bearer test-token"}
 }
 
 func TestListUpdates_MissingAuth(t *testing.T) {

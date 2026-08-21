@@ -80,9 +80,10 @@ func (h *Handler) ListNotifications(c *gin.Context) {
 	}
 
 	pagination := httpx.CalculatePaginationMeta(resp.Page, resp.Limit, resp.Total)
+	requestID := httpx.GetRequestID(c)
 	c.JSON(http.StatusOK, httpx.SuccessWithPagination(gin.H{
 		"notifications": resp.Notifications,
-	}, pagination))
+	}, pagination, requestID))
 }
 
 // GetNotification returns a single notification by ID.
@@ -106,7 +107,7 @@ func (h *Handler) GetNotification(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"notification": n}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"notification": n}, httpx.GetRequestID(c)))
 }
 
 // ListPreferences returns all notification preferences for the authenticated user.
@@ -124,7 +125,7 @@ func (h *Handler) ListPreferences(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"preferences": prefs}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"preferences": prefs}, httpx.GetRequestID(c)))
 }
 
 // UpdatePreference sets a user's notification preference.
@@ -142,12 +143,12 @@ func (h *Handler) UpdatePreference(c *gin.Context) {
 		Enabled   bool   `json:"enabled"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
 	if req.Channel == "" || req.EventType == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "channel and event_type are required"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "channel and event_type are required"))
 		return
 	}
 
@@ -162,5 +163,5 @@ func (h *Handler) UpdatePreference(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"message": "preference updated"}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"message": "preference updated"}, httpx.GetRequestID(c)))
 }

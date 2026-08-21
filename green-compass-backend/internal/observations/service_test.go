@@ -25,10 +25,10 @@ func TestService_Create(t *testing.T) {
 		{
 			name: "success with place_id",
 			input: CreateInput{
-				PlaceID:    &userID,
-				Category:   CategoryFlood,
+				PlaceID:     &userID,
+				Category:    CategoryFlood,
 				Description: "River rising",
-				Caller:     Caller{UserID: userID},
+				Caller:      Caller{UserID: userID},
 			},
 			setup: func(r *mockRepo) {
 				r.create = &Observation{ID: uuid.New(), ReporterID: userID, Category: CategoryFlood, Description: "River rising", Status: StatusPending, CreatedAt: now, UpdatedAt: now}
@@ -38,11 +38,11 @@ func TestService_Create(t *testing.T) {
 		{
 			name: "success with lat lon",
 			input: CreateInput{
-				Lat:        floatPtr(-1.2),
-				Lon:        floatPtr(36.8),
-				Category:   CategoryDrought,
+				Lat:         floatPtr(-1.2),
+				Lon:         floatPtr(36.8),
+				Category:    CategoryDrought,
 				Description: "Dry spell",
-				Caller:     Caller{UserID: userID},
+				Caller:      Caller{UserID: userID},
 			},
 			setup: func(r *mockRepo) {
 				r.create = &Observation{ID: uuid.New(), ReporterID: userID, Lat: floatPtr(-1.2), Lon: floatPtr(36.8), Category: CategoryDrought, Description: "Dry spell", Status: StatusPending, CreatedAt: now, UpdatedAt: now}
@@ -52,36 +52,36 @@ func TestService_Create(t *testing.T) {
 		{
 			name: "invalid category",
 			input: CreateInput{
-				Category:   "unknown",
+				Category:    "unknown",
 				Description: "test",
-				Caller:     Caller{UserID: userID},
+				Caller:      Caller{UserID: userID},
 			},
 			wantErr: ErrInvalidData,
 		},
 		{
 			name: "missing description",
 			input: CreateInput{
-				Category:   CategoryFlood,
+				Category:    CategoryFlood,
 				Description: "   ",
-				Caller:     Caller{UserID: userID},
+				Caller:      Caller{UserID: userID},
 			},
 			wantErr: ErrInvalidData,
 		},
 		{
 			name: "description too long",
 			input: CreateInput{
-				Category:   CategoryFlood,
+				Category:    CategoryFlood,
 				Description: longString(2001),
-				Caller:     Caller{UserID: userID},
+				Caller:      Caller{UserID: userID},
 			},
 			wantErr: ErrInvalidData,
 		},
 		{
 			name: "missing location",
 			input: CreateInput{
-				Category:   CategoryFlood,
+				Category:    CategoryFlood,
 				Description: "test",
-				Caller:     Caller{UserID: userID},
+				Caller:      Caller{UserID: userID},
 			},
 			wantErr: ErrInvalidData,
 		},
@@ -350,7 +350,6 @@ func (m *mockRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status string
 }
 
 func floatPtr(v float64) *float64 { return &v }
-func stringPtr(v string) *string   { return &v }
 func longString(n int) string {
 	b := make([]byte, n)
 	for i := range b {

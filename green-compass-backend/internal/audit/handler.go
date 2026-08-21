@@ -88,9 +88,10 @@ func (h *Handler) ListEntries(c *gin.Context) {
 	}
 
 	pagination := httpx.CalculatePaginationMeta(resp.Page, resp.Limit, resp.Total)
+	requestID := httpx.GetRequestID(c)
 	c.JSON(http.StatusOK, httpx.SuccessWithPagination(gin.H{
 		"entries": resp.Entries,
-	}, pagination))
+	}, pagination, requestID))
 }
 
 // GetEntry returns a single audit entry by ID.
@@ -120,5 +121,5 @@ func (h *Handler) GetEntry(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"entry": entry}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"entry": entry}, httpx.GetRequestID(c)))
 }

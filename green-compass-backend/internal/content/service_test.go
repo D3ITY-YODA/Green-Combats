@@ -97,10 +97,10 @@ func TestGenerateHeadline(t *testing.T) {
 
 func TestDescribeIndicator(t *testing.T) {
 	tests := []struct {
-		name               string
-		code               string
-		value              float64
-		wantDescSubstring  string
+		name              string
+		code              string
+		value             float64
+		wantDescSubstring string
 	}{
 		{
 			name:              "heavy rainfall",
@@ -153,17 +153,17 @@ func TestDescribeIndicator(t *testing.T) {
 
 func TestGenerateCallToAction(t *testing.T) {
 	tests := []struct {
-		name           string
-		contentType    string
-		urgency        int
-		wantNil        bool
-		wantSubstring  string
+		name          string
+		contentType   string
+		urgency       int
+		wantNil       bool
+		wantSubstring string
 	}{
 		{
-			name:          "low urgency no action",
-			contentType:   "today",
-			urgency:       20,
-			wantNil:       true,
+			name:        "low urgency no action",
+			contentType: "today",
+			urgency:     20,
+			wantNil:     true,
 		},
 		{
 			name:          "high alert action",

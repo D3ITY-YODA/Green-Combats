@@ -71,7 +71,7 @@ func (h *Handler) DeliveryStats(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"delivery_stats": stats}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"delivery_stats": stats}, httpx.GetRequestID(c)))
 }
 
 // ReportStats returns community report metrics for an organization.
@@ -108,7 +108,7 @@ func (h *Handler) ReportStats(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"report_stats": stats}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"report_stats": stats}, httpx.GetRequestID(c)))
 }
 
 // Dashboard returns a combined dashboard view.
@@ -162,5 +162,5 @@ func (h *Handler) Dashboard(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"dashboard": dashboard}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"dashboard": dashboard}, httpx.GetRequestID(c)))
 }

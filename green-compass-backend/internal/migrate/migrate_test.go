@@ -140,6 +140,21 @@ func TestUpDownCycle_Integration(t *testing.T) {
 	ctx := context.Background()
 	fsys := os.DirFS("../../migrations")
 
+	// Count the actual number of migration versions in the filesystem
+	// so the test stays in sync with the migrations directory.
+	allFiles, err := parseMigrations(fsys)
+	if err != nil {
+		t.Fatalf("parseMigrations: %v", err)
+	}
+	versions := map[int64]bool{}
+	for _, f := range allFiles {
+		versions[f.Version] = true
+	}
+	totalVersions := len(versions)
+	if totalVersions == 0 {
+		t.Fatal("no migration versions found in migrations directory")
+	}
+
 	if _, err := Down(ctx, pool, fsys, 0); err != nil {
 		t.Fatalf("reset to clean slate: %v", err)
 	}
@@ -151,24 +166,24 @@ func TestUpDownCycle_Integration(t *testing.T) {
 	if st.Current != 0 {
 		t.Fatalf("Current = %d after reset, want 0", st.Current)
 	}
-	if len(st.Pending) != 10 {
-		t.Fatalf("Pending = %v, want 10 versions", st.Pending)
+	if len(st.Pending) != totalVersions {
+		t.Fatalf("Pending = %v, want %d versions", st.Pending, totalVersions)
 	}
 
 	applied, err := Up(ctx, pool, fsys, 0)
 	if err != nil {
 		t.Fatalf("Up(all) unexpected error: %v", err)
 	}
-	if len(applied) != 10 {
-		t.Fatalf("applied = %v, want 10 versions", applied)
+	if len(applied) != totalVersions {
+		t.Fatalf("applied = %v, want %d versions", applied, totalVersions)
 	}
 
 	st, err = Current(ctx, pool, fsys)
 	if err != nil {
 		t.Fatalf("Status() unexpected error: %v", err)
 	}
-	if st.Current != 10 || len(st.Pending) != 0 {
-		t.Fatalf("status after up-all = current %d pending %v, want current 10 pending empty", st.Current, st.Pending)
+	if st.Current != int64(totalVersions) || len(st.Pending) != 0 {
+		t.Fatalf("status after up-all = current %d pending %v, want current %d pending empty", st.Current, st.Pending, totalVersions)
 	}
 
 	for _, table := range []string{"users", "organizations", "organization_members", "places", "user_saved_places", "observations", "updates", "data_sources", "ingestion_runs", "raw_records"} {
@@ -190,16 +205,16 @@ func TestUpDownCycle_Integration(t *testing.T) {
 		t.Fatalf("reverted = %v, want 2 versions", reverted)
 	}
 	st, _ = Current(ctx, pool, fsys)
-	if st.Current != 8 {
-		t.Fatalf("Current = %d after Down(2), want 8", st.Current)
+	if st.Current != int64(totalVersions)-2 {
+		t.Fatalf("Current = %d after Down(2), want %d", st.Current, totalVersions-2)
 	}
 
 	if _, err := Up(ctx, pool, fsys, 0); err != nil {
 		t.Fatalf("re-Up(all) unexpected error: %v", err)
 	}
 	st, _ = Current(ctx, pool, fsys)
-	if st.Current != 10 {
-		t.Fatalf("Current = %d after re-up, want 10", st.Current)
+	if st.Current != int64(totalVersions) {
+		t.Fatalf("Current = %d after re-up, want %d", st.Current, totalVersions)
 	}
 
 	if _, err := Up(ctx, pool, fsys, 0); err != nil {

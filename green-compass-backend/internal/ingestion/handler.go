@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/sources"
@@ -57,7 +56,7 @@ func (h *Handler) TriggerIngestion(c *gin.Context) {
 		"message":     "ingestion triggered",
 		"source_code": req.SourceCode,
 		"place_id":    req.PlaceID,
-	}))
+	}, httpx.GetRequestID(c)))
 }
 
 // ListRuns returns ingestion run history (placeholder).
@@ -72,10 +71,5 @@ func (h *Handler) ListRuns(c *gin.Context) {
 	// Placeholder: full implementation would query ingestion_runs table
 	c.JSON(http.StatusOK, httpx.Success(gin.H{
 		"runs": []interface{}{},
-	}))
-}
-
-// Helper to parse UUID safely
-func parseUUID(s string) (uuid.UUID, error) {
-	return uuid.Parse(s)
+	}, httpx.GetRequestID(c)))
 }

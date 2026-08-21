@@ -8,17 +8,17 @@ import (
 
 // Update represents a generated content item ready for user consumption
 type Update struct {
-	ID               uuid.UUID    `json:"id"`
-	PlaceID          uuid.UUID    `json:"place_id"`
-	PlaceName        string       `json:"place_name"`
-	ContentType      string       `json:"content_type"` // today, forecast, alert
-	Headline         string       `json:"headline"`
-	BodyText         string       `json:"body_text"`
-	CallToAction     *string      `json:"call_to_action,omitempty"`
-	Indicators       []Indicator  `json:"indicators,omitempty"`
-	GeneratedAt      time.Time    `json:"generated_at"`
-	PeriodStart      time.Time    `json:"period_start"`
-	PeriodEnd        time.Time    `json:"period_end"`
+	ID           uuid.UUID   `json:"id"`
+	PlaceID      uuid.UUID   `json:"place_id"`
+	PlaceName    string      `json:"place_name"`
+	ContentType  string      `json:"content_type"` // today, forecast, alert
+	Headline     string      `json:"headline"`
+	BodyText     string      `json:"body_text"`
+	CallToAction *string     `json:"call_to_action,omitempty"`
+	Indicators   []Indicator `json:"indicators,omitempty"`
+	GeneratedAt  time.Time   `json:"generated_at"`
+	PeriodStart  time.Time   `json:"period_start"`
+	PeriodEnd    time.Time   `json:"period_end"`
 }
 
 // Indicator represents a single indicator in an update
@@ -57,7 +57,7 @@ type GetTodayRequest struct {
 // ExploreRequest represents parameters for exploring indicators
 type ExploreRequest struct {
 	UserID   uuid.UUID
-	Category *string   // weather, water, agriculture, air_quality
+	Category *string // weather, water, agriculture, air_quality
 	PlaceID  *uuid.UUID
 	Page     int
 	Limit    int

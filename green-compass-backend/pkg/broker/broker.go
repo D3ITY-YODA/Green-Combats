@@ -16,9 +16,9 @@ type Handler func(ctx context.Context, evt Event) error
 
 // Broker is an in-process publish/subscribe event bus.
 type Broker struct {
-	mu      sync.RWMutex
-	subs    map[string][]handlerEntry
-	logger  *slog.Logger
+	mu     sync.RWMutex
+	subs   map[string][]handlerEntry
+	logger *slog.Logger
 }
 
 type handlerEntry struct {

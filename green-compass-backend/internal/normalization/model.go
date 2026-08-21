@@ -32,26 +32,26 @@ const (
 )
 
 type CanonicalObservation struct {
-	ID             uuid.UUID
-	RawRecordID    uuid.UUID
-	SourceID       uuid.UUID
-	PlaceID        uuid.UUID
-	SourceCode     string
-	DatasetKey     string
-	TopicKey       string
-	Variable       string
-	Value          float64
-	TextValue      *string
-	Unit           string
-	ObservedAt     time.Time
-	ValidFrom      *time.Time
-	ValidUntil     *time.Time
-	RetrievedAt    time.Time
-	IsForecast     bool
-	QualityStatus  string
-	SourceVersion  *string
-	RawAssetRef    string
-	License        *string
-	Geometry       interface{}
-	Valid          bool
+	ID            uuid.UUID
+	RawRecordID   uuid.UUID
+	SourceID      uuid.UUID
+	PlaceID       uuid.UUID
+	SourceCode    string
+	DatasetKey    string
+	TopicKey      string
+	Variable      string
+	Value         float64
+	TextValue     *string
+	Unit          string
+	ObservedAt    time.Time
+	ValidFrom     *time.Time
+	ValidUntil    *time.Time
+	RetrievedAt   time.Time
+	IsForecast    bool
+	QualityStatus string
+	SourceVersion *string
+	RawAssetRef   string
+	License       *string
+	Geometry      interface{}
+	Valid         bool
 }

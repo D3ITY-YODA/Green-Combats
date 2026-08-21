@@ -54,7 +54,7 @@ func (h *Handler) ListUsers(c *gin.Context) {
 		"users": []interface{}{},
 		"page":  page,
 		"limit": limit,
-	}))
+	}, httpx.GetRequestID(c)))
 }
 
 // GetUser returns a single user by ID.
@@ -81,5 +81,5 @@ func (h *Handler) GetUser(c *gin.Context) {
 			"language":          user.Language,
 			"is_platform_admin": user.IsPlatformAdmin,
 		},
-	}))
+	}, httpx.GetRequestID(c)))
 }

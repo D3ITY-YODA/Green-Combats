@@ -182,9 +182,9 @@ func (r *Repository) ExploreIndicators(ctx context.Context, req ExploreRequest) 
 
 	// Otherwise, for discovery: show only user's saved places or nearby places
 	// For now, show all; this can be scoped per user saved places in production
-	baseQuery += fmt.Sprintf(`
+	baseQuery += `
 		ORDER BY pi.computed_at DESC
-	`)
+	`
 
 	// Count total
 	countQuery := fmt.Sprintf("SELECT COUNT(DISTINCT pi.id) FROM (%s) AS subq", baseQuery)

@@ -12,9 +12,9 @@ type Store interface {
 }
 
 type memoryStore struct {
-	mu     sync.RWMutex
-	data   map[string][]byte
-	types  map[string]string
+	mu    sync.RWMutex
+	data  map[string][]byte
+	types map[string]string
 }
 
 func NewMemoryStore() Store {

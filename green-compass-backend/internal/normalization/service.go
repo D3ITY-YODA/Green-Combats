@@ -4,12 +4,24 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
-	"green-compass-backend/internal/ingestion"
 	"green-compass-backend/internal/sources"
 )
+
+// RawInput is the subset of a landed raw record needed for normalization.
+// Defined locally to avoid an import cycle with the ingestion package.
+type RawInput struct {
+	ID               uuid.UUID
+	SourceID         uuid.UUID
+	PlaceID          uuid.UUID
+	Payload          []byte
+	SourceObservedAt time.Time
+	FetchedAt        time.Time
+	SourceURL        string
+}
 
 type Service struct{}
 
@@ -17,7 +29,7 @@ func NewService() *Service {
 	return &Service{}
 }
 
-func (s *Service) Normalize(ctx context.Context, sourceCode string, raw ingestion.RawRecord) ([]CanonicalObservation, error) {
+func (s *Service) Normalize(ctx context.Context, sourceCode string, raw RawInput) ([]CanonicalObservation, error) {
 	switch sourceCode {
 	case sources.CodeOpenMeteo:
 		return s.normalizeOpenMeteo(raw)
@@ -28,7 +40,7 @@ func (s *Service) Normalize(ctx context.Context, sourceCode string, raw ingestio
 	}
 }
 
-func (s *Service) NormalizeAll(ctx context.Context, sourceCode string, records []ingestion.RawRecord) ([]CanonicalObservation, error) {
+func (s *Service) NormalizeAll(ctx context.Context, sourceCode string, records []RawInput) ([]CanonicalObservation, error) {
 	var results []CanonicalObservation
 	for _, rec := range records {
 		obs, err := s.Normalize(ctx, sourceCode, rec)
@@ -40,7 +52,7 @@ func (s *Service) NormalizeAll(ctx context.Context, sourceCode string, records [
 	return results, nil
 }
 
-func (s *Service) normalizeOpenMeteo(raw ingestion.RawRecord) ([]CanonicalObservation, error) {
+func (s *Service) normalizeOpenMeteo(raw RawInput) ([]CanonicalObservation, error) {
 	var payload map[string]json.RawMessage
 	if err := json.Unmarshal(raw.Payload, &payload); err != nil {
 		return nil, fmt.Errorf("%w: failed to decode Open-Meteo json: %v", ErrMalformedPayload, err)
@@ -75,29 +87,29 @@ func (s *Service) normalizeOpenMeteo(raw ingestion.RawRecord) ([]CanonicalObserv
 		valid := val >= m.min && val <= m.max
 		topicKey := inferTopicKey(m.variable)
 		results = append(results, CanonicalObservation{
-			ID:             uuid.New(),
-			RawRecordID:    raw.ID,
-			SourceID:       raw.SourceID,
-			PlaceID:        raw.PlaceID,
-			SourceCode:     sources.CodeOpenMeteo,
-			DatasetKey:     "forecast",
-			TopicKey:       topicKey,
-			Variable:       m.variable,
-			Value:          val,
-			Unit:           m.unit,
-			ObservedAt:     raw.SourceObservedAt,
-			RetrievedAt:    raw.FetchedAt,
-			IsForecast:     raw.SourceObservedAt.After(time.Now().UTC()),
-			QualityStatus:  "accepted",
-			RawAssetRef:    raw.SourceURL,
-			Valid:          valid,
+			ID:            uuid.New(),
+			RawRecordID:   raw.ID,
+			SourceID:      raw.SourceID,
+			PlaceID:       raw.PlaceID,
+			SourceCode:    sources.CodeOpenMeteo,
+			DatasetKey:    "forecast",
+			TopicKey:      topicKey,
+			Variable:      m.variable,
+			Value:         val,
+			Unit:          m.unit,
+			ObservedAt:    raw.SourceObservedAt,
+			RetrievedAt:   raw.FetchedAt,
+			IsForecast:    raw.SourceObservedAt.After(time.Now().UTC()),
+			QualityStatus: "accepted",
+			RawAssetRef:   raw.SourceURL,
+			Valid:         valid,
 		})
 	}
 
 	return results, nil
 }
 
-func (s *Service) normalizeNASAPower(raw ingestion.RawRecord) ([]CanonicalObservation, error) {
+func (s *Service) normalizeNASAPower(raw RawInput) ([]CanonicalObservation, error) {
 	var payload map[string]json.RawMessage
 	if err := json.Unmarshal(raw.Payload, &payload); err != nil {
 		return nil, fmt.Errorf("%w: failed to decode NASA POWER json: %v", ErrMalformedPayload, err)
@@ -136,22 +148,22 @@ func (s *Service) normalizeNASAPower(raw ingestion.RawRecord) ([]CanonicalObserv
 		valid := val >= m.min && val <= m.max
 		topicKey := inferTopicKey(m.variable)
 		results = append(results, CanonicalObservation{
-			ID:             uuid.New(),
-			RawRecordID:    raw.ID,
-			SourceID:       raw.SourceID,
-			PlaceID:        raw.PlaceID,
-			SourceCode:     sources.CodeNASAPower,
-			DatasetKey:     "historical",
-			TopicKey:       topicKey,
-			Variable:       m.variable,
-			Value:          val,
-			Unit:           m.unit,
-			ObservedAt:     raw.SourceObservedAt,
-			RetrievedAt:    raw.FetchedAt,
-			IsForecast:     false,
-			QualityStatus:  "accepted",
-			RawAssetRef:    raw.SourceURL,
-			Valid:          valid,
+			ID:            uuid.New(),
+			RawRecordID:   raw.ID,
+			SourceID:      raw.SourceID,
+			PlaceID:       raw.PlaceID,
+			SourceCode:    sources.CodeNASAPower,
+			DatasetKey:    "historical",
+			TopicKey:      topicKey,
+			Variable:      m.variable,
+			Value:         val,
+			Unit:          m.unit,
+			ObservedAt:    raw.SourceObservedAt,
+			RetrievedAt:   raw.FetchedAt,
+			IsForecast:    false,
+			QualityStatus: "accepted",
+			RawAssetRef:   raw.SourceURL,
+			Valid:         valid,
 		})
 	}
 

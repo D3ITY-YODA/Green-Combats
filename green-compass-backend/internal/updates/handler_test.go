@@ -55,11 +55,11 @@ func TestListPaginationValidation(t *testing.T) {
 	svc := NewService(repo, nil)
 
 	tests := []struct {
-		name      string
-		inputPage int
+		name       string
+		inputPage  int
 		inputLimit int
-		wantPage  int
-		wantLimit int
+		wantPage   int
+		wantLimit  int
 	}{
 		{
 			name:       "invalid page (negative)",

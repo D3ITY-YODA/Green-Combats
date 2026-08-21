@@ -35,13 +35,13 @@ func NewService(repo observationRepo, store storage.Store, logger *slog.Logger) 
 }
 
 type CreateInput struct {
-	PlaceID         *uuid.UUID
-	Lat             *float64
-	Lon             *float64
-	Category        string
-	Description     string
-	PhotoObjectKey  *string
-	Caller          Caller
+	PlaceID        *uuid.UUID
+	Lat            *float64
+	Lon            *float64
+	Category       string
+	Description    string
+	PhotoObjectKey *string
+	Caller         Caller
 }
 
 func (s *Service) Create(ctx context.Context, in CreateInput) (*Observation, error) {
@@ -60,14 +60,14 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (*Observation, err
 	}
 
 	o := &Observation{
-		ReporterID:      in.Caller.UserID,
-		PlaceID:         in.PlaceID,
-		Lat:             in.Lat,
-		Lon:             in.Lon,
-		Category:        in.Category,
-		Description:     description,
-		PhotoObjectKey:  in.PhotoObjectKey,
-		Status:          StatusPending,
+		ReporterID:     in.Caller.UserID,
+		PlaceID:        in.PlaceID,
+		Lat:            in.Lat,
+		Lon:            in.Lon,
+		Category:       in.Category,
+		Description:    description,
+		PhotoObjectKey: in.PhotoObjectKey,
+		Status:         StatusPending,
 	}
 	if err := s.repo.Create(ctx, o); err != nil {
 		return nil, err

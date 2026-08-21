@@ -130,7 +130,7 @@ func TestMemoryCache_Struct(t *testing.T) {
 }
 
 func TestRedisCache_FallbackToMemory(t *testing.T) {
-	c := NewRedisCache("") // empty addr falls back to memory
+	c := New("") // empty addr falls back to memory
 	ctx := context.Background()
 
 	_ = c.Set(ctx, "fallback", "value", 10*time.Second)

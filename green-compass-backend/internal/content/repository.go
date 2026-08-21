@@ -40,7 +40,7 @@ func (r *Repository) Store(ctx context.Context, c *Content) error {
 	err := r.pool.QueryRow(
 		ctx, query,
 		c.PlaceID, c.GeneratedAt, c.PeriodStart, c.PeriodEnd,
-		c.ContentType, c.Language, c.Headline, c.BodyText, 		c.CallToAction, &c.SourceIndicators,
+		c.ContentType, c.Language, c.Headline, c.BodyText, c.CallToAction, &c.SourceIndicators,
 	).Scan(&c.ID, &c.CreatedAt)
 
 	if err != nil {
