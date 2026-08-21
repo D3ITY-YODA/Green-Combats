@@ -93,3 +93,47 @@ components:
         message: { type: string }
         details: {}
       required: [code, message]
+
+    Observation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        reporter_id: { type: string, format: uuid }
+        place_id: { type: string, format: uuid, nullable: true }
+        lat: { type: number, format: double, nullable: true }
+        lon: { type: number, format: double, nullable: true }
+        category:
+          type: string
+          enum: [flood, drought, water_quality, crop_damage, air_quality, other]
+        description: { type: string }
+        photo_object_key: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [pending, verified, rejected, flagged]
+        verified_by: { type: string, format: uuid, nullable: true }
+        verified_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, reporter_id, category, description, status, created_at, updated_at]
+
+    Report:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        reporter_id: { type: string, format: uuid }
+        place_id: { type: string, format: uuid, nullable: true }
+        lat: { type: number, format: double, nullable: true }
+        lon: { type: number, format: double, nullable: true }
+        category:
+          type: string
+          enum: [flood, drought, water_quality, crop_damage, air_quality, other]
+        description: { type: string }
+        photo_object_key: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [pending, verified, rejected, flagged]
+        verified_by: { type: string, format: uuid, nullable: true }
+        verified_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, reporter_id, category, description, status, created_at, updated_at]
