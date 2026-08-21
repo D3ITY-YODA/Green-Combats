@@ -35,8 +35,8 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
 
   const fetchUser = useCallback(async () => {
     try {
-      const response = await apiFetch<User>("/api/v1/me");
-      setUser(response.data);
+      const response = await apiFetch<{ user: User }>("/api/v1/auth/me");
+      setUser(response.data.user);
     } catch (error) {
       // If the API returns 401 or fails, the user is not authenticated
       setUser(null);
@@ -68,7 +68,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
   const value: AuthContextType = {
     user,
     isLoading,
-    isAuthenticated: !!user && user.status === "active",
+    isAuthenticated: !!user,
     refreshUser: fetchUser,
     signOut,
   };

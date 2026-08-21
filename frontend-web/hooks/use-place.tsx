@@ -1,16 +1,18 @@
-// app/(public)/layout.tsx
+// hooks/use-place.tsx (layout wrapper — re-exports for backward compatibility)
 
 import { AuthProvider } from "@/hooks/use-auth";
-import { PlaceProvider } from "@/hooks/use-place";
+import { PlaceProvider } from "@/hooks/place-context";
 import { serverApiFetch } from "@/lib/api/server-client";
 import type { UserPlace } from "@/types/places";
 
+export { PlaceProvider, usePlace } from "@/hooks/place-context";
+
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  // Optional: Fetch places on the server to prevent loading flash
+  // Fetch places on the server to prevent loading flash
   let userPlaces: UserPlace[] | undefined;
   try {
-    const res = await serverApiFetch<UserPlace[]>("/api/v1/me/places");
-    userPlaces = res.data;
+    const res = await serverApiFetch<{ places: UserPlace[] }>("/api/v1/me/places");
+    userPlaces = res.data.places;
   } catch {
     // User is not logged in or has no places
   }
@@ -18,7 +20,6 @@ export default async function PublicLayout({ children }: { children: React.React
   return (
     <AuthProvider>
       <PlaceProvider initialPlaces={userPlaces}>
-        {/* ... rest of your layout (PublicHeader, main, PublicNavigation) ... */}
         {children}
       </PlaceProvider>
     </AuthProvider>
