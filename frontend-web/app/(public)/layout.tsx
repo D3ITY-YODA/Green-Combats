@@ -1,7 +1,5 @@
-// app/(public)/layout.tsx
-
-import { PublicHeader } from "@/components/layout/public-header";
-import { PublicNavigation } from "@/components/navigation/public-navigation";
+import { AppNav } from "@/components/layout/app-nav";
+import { OfflineBanner } from "@/components/layout/offline-banner";
 
 export default function PublicLayout({
   children,
@@ -9,17 +7,12 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-warm-white">
-      {/* Top header with place selector, profile link, and notifications */}
-      <PublicHeader />
-      
-      {/* Main content area with bottom padding to prevent content from being hidden behind the fixed bottom navigation */}
-      <main className="pb-24">
+    <div className="flex flex-col md:flex-row min-h-screen">
+      <OfflineBanner />
+      <AppNav />
+      <main className="flex-1 pb-20 md:pb-0 md:p-0 pt-8 md:pt-0">
         {children}
       </main>
-      
-      {/* Fixed bottom navigation for primary public routes */}
-      <PublicNavigation />
     </div>
   );
 }

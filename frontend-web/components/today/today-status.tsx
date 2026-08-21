@@ -1,7 +1,4 @@
-// components/today/today-status.tsx
-
-import type { DataStatus } from "@/types/common"; // Adjust path to match your types directory
-import { formatDateTime } from "@/lib/formatters"; // Adjust path to your date formatting utility
+import type { DataStatus } from "@/types/common";
 
 interface TodayStatusProps {
   title: string;
@@ -10,49 +7,24 @@ interface TodayStatusProps {
   dataStatus: DataStatus;
 }
 
-export function TodayStatus({
-  title,
-  message,
-  updatedAt,
-  dataStatus,
-}: TodayStatusProps) {
-  // Handle delayed or stale data states
+export function TodayStatus({ title, message, updatedAt, dataStatus }: TodayStatusProps) {
   if (dataStatus === "delayed" || dataStatus === "stale") {
     return (
-      <section 
-        className="rounded-2xl border border-stone bg-white p-6"
-        role="status"
-        aria-live="polite"
-      >
-        <p className="text-sm font-medium text-muted">
-          Information delayed
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold text-charcoal">
+      <section className="rounded-2xl border border-background-stone bg-background p-6">
+        <p className="text-sm font-medium text-status-delayed">Information delayed</p>
+        <h1 className="mt-2 text-2xl font-semibold text-text-charcoal">
           The latest update for this place is not available yet.
         </h1>
-        {updatedAt && (
-          <p className="mt-3 text-sm text-muted">
-            Last reliable update: {formatDateTime(updatedAt)}
-          </p>
-        )}
+        {updatedAt && <p className="mt-3 text-sm text-text-muted">Last reliable update: {updatedAt}</p>}
       </section>
     );
   }
 
-  // Normal / Current state
   return (
-    <section className="rounded-2xl border border-stone bg-white p-6">
-      {updatedAt && (
-        <p className="text-sm text-muted">
-          {formatDateTime(updatedAt)}
-        </p>
-      )}
-      <h1 className="mt-2 text-2xl font-semibold text-charcoal">
-        {title}
-      </h1>
-      <p className="mt-2 text-base leading-relaxed text-muted">
-        {message}
-      </p>
+    <section className="rounded-2xl border border-background-stone bg-background p-6">
+      <p className="text-sm text-text-muted">{updatedAt && `Updated ${updatedAt}`}</p>
+      <h1 className="mt-2 text-2xl font-semibold text-text-charcoal">{title}</h1>
+      <p className="mt-2 text-base text-text-muted">{message}</p>
     </section>
   );
 }
