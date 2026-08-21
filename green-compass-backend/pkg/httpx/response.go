@@ -2,7 +2,6 @@ package httpx
 
 import (
 	"time"
-	"github.com/google/uuid"
 )
 
 type Envelope struct {

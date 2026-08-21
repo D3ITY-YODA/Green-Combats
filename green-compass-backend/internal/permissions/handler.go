@@ -58,7 +58,7 @@ func (h *Handler) CheckPermission(c *gin.Context) {
 			"user_id":        identity.UserID,
 			"org_id":         orgID,
 			"required_role":  role,
-		}))
+		}, httpx.GetRequestID(c)))
 		return
 	}
 
@@ -67,7 +67,7 @@ func (h *Handler) CheckPermission(c *gin.Context) {
 		"user_id":        identity.UserID,
 		"org_id":         orgID,
 		"required_role":  role,
-	}))
+	}, httpx.GetRequestID(c)))
 }
 
 // ListRoles returns the available roles.
@@ -75,5 +75,5 @@ func (h *Handler) CheckPermission(c *gin.Context) {
 func (h *Handler) ListRoles(c *gin.Context) {
 	c.JSON(http.StatusOK, httpx.Success(gin.H{
 		"roles": []string{"admin", "reviewer", "viewer"},
-	}))
+	}, httpx.GetRequestID(c)))
 }

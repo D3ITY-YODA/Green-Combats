@@ -152,7 +152,15 @@ func (h *Handler) SetStatus(c *gin.Context) {
 }
 
 // AddMember adds a user to an organization.
-var req struct {
+// POST /v1/organizations/:id/members
+func (h *Handler) AddMember(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		httpx.HandleError(c, httpx.InvalidParam("id", "must be a valid UUID"))
+		return
+	}
+
+	var req struct {
 		UserID string `json:"user_id"`
 		Role   string `json:"role"`
 	}

@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"errors"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -72,5 +73,13 @@ func InvalidParam(param, reason string) *AppError {
 		Message: param + ": " + reason,
 		Status:  http.StatusBadRequest,
 		Details: map[string]interface{}{"parameter": param, "reason": reason},
+	}
+}
+
+func NotFound(message string) *AppError {
+	return &AppError{
+		Code:    "NOT_FOUND",
+		Message: message,
+		Status:  http.StatusNotFound,
 	}
 }

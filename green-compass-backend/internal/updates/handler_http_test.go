@@ -68,6 +68,14 @@ func (s *stubUpdatesAPI) Explore(_ context.Context, req updates.ExploreRequest) 
 	return s.exploreResp, nil
 }
 
+func (s *stubUpdatesAPI) GetByID(context.Context, uuid.UUID) (*updates.Update, error) {
+	return nil, updates.ErrNotFound
+}
+
+func (s *stubUpdatesAPI) Acknowledge(context.Context, uuid.UUID, uuid.UUID) error {
+	return nil
+}
+
 func newTestRouter(api updates.API, authAPI auth.API) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()

@@ -51,7 +51,7 @@ func (s *Service) List(ctx context.Context, req ListRequest) (*ListResponse, err
 	// Validate pagination
 	paging := httpx.ValidatePagination(req.Page, req.Limit)
 	req.Page = paging.Page
-	req.Limit = paging.Limit
+	req.Limit = paging.PageSize
 
 	updates, total, err := s.repo.ListForUser(ctx, req)
 	if err != nil {
@@ -72,7 +72,7 @@ func (s *Service) Explore(ctx context.Context, req ExploreRequest) (*ExploreResp
 	// Validate pagination
 	paging := httpx.ValidatePagination(req.Page, req.Limit)
 	req.Page = paging.Page
-	req.Limit = paging.Limit
+	req.Limit = paging.PageSize
 
 	indicators, total, err := s.repo.ExploreIndicators(ctx, req)
 	if err != nil {
@@ -86,4 +86,16 @@ func (s *Service) Explore(ctx context.Context, req ExploreRequest) (*ExploreResp
 		Limit:      req.Limit,
 		HasNext:    req.Page < (total + req.Limit - 1) / req.Limit,
 	}, nil
+}
+
+// Acknowledge marks an update as acknowledged by a user.
+func (s *Service) Acknowledge(ctx context.Context, updateID, userID uuid.UUID) error {
+	// TODO: implement persistence
+	return nil
+}
+
+// GetByID retrieves a single update by its ID.
+func (s *Service) GetByID(ctx context.Context, updateID uuid.UUID) (*Update, error) {
+	// TODO: implement via repo
+	return nil, nil
 }

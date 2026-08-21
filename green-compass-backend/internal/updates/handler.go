@@ -36,13 +36,13 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, authMiddleware gin.HandlerF
 	group.POST("/updates/:update_id/acknowledge", h.AcknowledgeUpdate)
 
 	group.GET("/explore", h.ExploreIndicators)
-	group.GET("/places/:place_id/explore", h.ExploreByPlace)
-	group.GET("/places/:place_id/local-outlook", h.LocalOutlook)
-	group.GET("/places/:place_id/seasonal", h.Seasonal)
-	group.GET("/places/:place_id/water", h.Water)
-	group.GET("/places/:place_id/land-ecosystems", h.LandEcosystems)
-	group.GET("/places/:place_id/food-agriculture", h.FoodAgriculture)
-	group.GET("/places/:place_id/community", h.Community)
+	group.GET("/explore/places/:place_id", h.ExploreByPlace)
+	group.GET("/explore/places/:place_id/local-outlook", h.LocalOutlook)
+	group.GET("/explore/places/:place_id/seasonal", h.Seasonal)
+	group.GET("/explore/places/:place_id/water", h.Water)
+	group.GET("/explore/places/:place_id/land-ecosystems", h.LandEcosystems)
+	group.GET("/explore/places/:place_id/food-agriculture", h.FoodAgriculture)
+	group.GET("/explore/places/:place_id/community", h.Community)
 }
 
 // ListUpdates retrieves paginated updates for user's saved places
@@ -156,8 +156,7 @@ func (h *Handler) ExploreIndicators(c *gin.Context) {
 // GetUpdate returns a single update by ID
 // GET /v1/updates/{update_id}
 func (h *Handler) GetUpdate(c *gin.Context) {
-	identity, ok := auth.IdentityFrom(c.Request.Context())
-	if !ok {
+	if _, ok := auth.IdentityFrom(c.Request.Context()); !ok {
 		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
@@ -220,7 +219,6 @@ func (h *Handler) ExploreByPlace(c *gin.Context) {
 		return
 	}
 
-	userID := identity.UserID
 	page := 1
 	if pageStr := c.Query("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
@@ -241,7 +239,7 @@ func (h *Handler) ExploreByPlace(c *gin.Context) {
 	}
 
 	resp, err := h.svc.Explore(c.Request.Context(), ExploreRequest{
-		UserID:   userID,
+		UserID:   identity.UserID,
 		Category: category,
 		PlaceID:  &placeID,
 		Page:     page,

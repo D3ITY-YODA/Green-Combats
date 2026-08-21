@@ -38,5 +38,6 @@ func (h *Handler) ListSources(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"sources": sources}))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"sources": sources}, requestID))
 }

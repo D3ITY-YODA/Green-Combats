@@ -1,8 +1,6 @@
 package httpx
 
-import (
-	"math"
-)
+
 
 // PaginationParams holds request pagination parameters
 type PaginationParams struct {

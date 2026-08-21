@@ -127,7 +127,6 @@ func TestGetToday_Success(t *testing.T) {
 	}
 
 	var resp struct {
-		Status string `json:"status"`
 		Data   struct {
 			Place struct {
 				ID        string `json:"id"`
@@ -142,9 +141,6 @@ func TestGetToday_Success(t *testing.T) {
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
 		t.Fatalf("decode response: %v", err)
-	}
-	if resp.Status != "success" {
-		t.Errorf("status: got %q, want %q", resp.Status, "success")
 	}
 	if resp.Data.Place.Name != "Nairobi" {
 		t.Errorf("place name: got %q, want %q", resp.Data.Place.Name, "Nairobi")

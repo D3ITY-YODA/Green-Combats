@@ -150,17 +150,19 @@ func TestHandler_Register(t *testing.T) {
 			}
 			if tt.wantStatus == http.StatusCreated {
 				var resp struct {
-					User struct {
-						ID string `json:"id"`
-					} `json:"user"`
-					Tokens struct {
-						AccessToken string `json:"access_token"`
-					} `json:"tokens"`
+					Data struct {
+						User struct {
+							ID string `json:"id"`
+						} `json:"user"`
+						Tokens struct {
+							AccessToken string `json:"access_token"`
+						} `json:"tokens"`
+					} `json:"data"`
 				}
 				if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
 					t.Fatalf("decode response: %v", err)
 				}
-				if resp.User.ID != userID.String() || resp.Tokens.AccessToken != "access.jwt.value" {
+				if resp.Data.User.ID != userID.String() || resp.Data.Tokens.AccessToken != "access.jwt.value" {
 					t.Errorf("response body mismatch: %s", rec.Body.String())
 				}
 			}
@@ -267,15 +269,17 @@ func TestHandler_Me_ReturnsSessionUser(t *testing.T) {
 		t.Fatalf("status = %d, want 200 (body: %s)", rec.Code, rec.Body.String())
 	}
 	var resp struct {
-		User struct {
-			ID              string `json:"id"`
-			IsPlatformAdmin bool   `json:"is_platform_admin"`
-		} `json:"user"`
+		Data struct {
+			User struct {
+				ID              string `json:"id"`
+				IsPlatformAdmin bool   `json:"is_platform_admin"`
+			} `json:"user"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
-	if resp.User.ID != id.String() || !resp.User.IsPlatformAdmin {
+	if resp.Data.User.ID != id.String() || !resp.Data.User.IsPlatformAdmin {
 		t.Errorf("me response mismatch: %s", rec.Body.String())
 	}
 }

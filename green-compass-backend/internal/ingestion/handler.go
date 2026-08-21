@@ -57,7 +57,7 @@ func (h *Handler) TriggerIngestion(c *gin.Context) {
 		"message":     "ingestion triggered",
 		"source_code": req.SourceCode,
 		"place_id":    req.PlaceID,
-	}))
+	}, httpx.GetRequestID(c)))
 }
 
 // ListRuns returns ingestion run history (placeholder).
@@ -72,7 +72,7 @@ func (h *Handler) ListRuns(c *gin.Context) {
 	// Placeholder: full implementation would query ingestion_runs table
 	c.JSON(http.StatusOK, httpx.Success(gin.H{
 		"runs": []interface{}{},
-	}))
+	}, httpx.GetRequestID(c)))
 }
 
 // Helper to parse UUID safely
