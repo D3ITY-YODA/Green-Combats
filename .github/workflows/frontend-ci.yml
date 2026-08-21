@@ -6,7 +6,7 @@ on:
       - 'frontend-web/**'
       - 'development/**'
   push:
-    branches: [main, development]
+    branches: [main, development,frontend-web]
     paths:
       - 'frontend-web/**'
       - 'development/**'
