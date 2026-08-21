@@ -24,7 +24,7 @@ func (m *mockAppRepo) GetRuleForIndicatorAndPlaceType(ctx context.Context, indic
 func (m *mockAppRepo) ListRulesForPlaceType(ctx context.Context, placeType string) ([]Rule, error) {
 	var rules []Rule
 	for _, rule := range m.rules {
-		if rule.PlaceType == placeType && rule.Applicable {
+		if rule.PlaceType == placeType {
 			rules = append(rules, *rule)
 		}
 	}

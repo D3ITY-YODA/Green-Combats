@@ -43,7 +43,7 @@ func (r *Repository) ListRulesForPlaceType(ctx context.Context, placeType string
 	query := `
 		SELECT id, indicator_id, place_type, applicable, min_threshold, max_threshold, relevance_score, created_at, updated_at
 		FROM indicator_applicability_rules
-		WHERE place_type = $1 AND applicable = TRUE
+		WHERE place_type = $1
 		ORDER BY relevance_score DESC
 	`
 	rows, err := r.pool.Query(ctx, query, placeType)

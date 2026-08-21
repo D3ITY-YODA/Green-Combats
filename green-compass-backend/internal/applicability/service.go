@@ -3,14 +3,21 @@ package applicability
 import (
 	"context"
 	"log/slog"
+
+	"github.com/google/uuid"
 )
 
+type applicabilityRepo interface {
+	GetRuleForIndicatorAndPlaceType(ctx context.Context, indicatorID uuid.UUID, placeType string) (*Rule, error)
+	ListRulesForPlaceType(ctx context.Context, placeType string) ([]Rule, error)
+}
+
 type Service struct {
-	repo   *Repository
+	repo   applicabilityRepo
 	logger *slog.Logger
 }
 
-func NewService(repo *Repository, logger *slog.Logger) *Service {
+func NewService(repo applicabilityRepo, logger *slog.Logger) *Service {
 	return &Service{
 		repo:   repo,
 		logger: logger,

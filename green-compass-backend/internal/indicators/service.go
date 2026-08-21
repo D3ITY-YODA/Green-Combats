@@ -2,7 +2,6 @@ package indicators
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"math"
 	"sort"
@@ -12,17 +11,24 @@ import (
 	"green-compass-backend/internal/normalization"
 )
 
+type indicatorRepo interface {
+	ListDefinitions(ctx context.Context) ([]Definition, error)
+	Store(ctx context.Context, ind *Indicator) error
+	GetLatest(ctx context.Context, placeID, indicatorID uuid.UUID) (*Indicator, error)
+	GetForPeriod(ctx context.Context, placeID, indicatorID uuid.UUID, periodStart, periodEnd time.Time) (*Indicator, error)
+}
+
 type NormalizationRepository interface {
 	ListCanonicalObservations(ctx context.Context, placeID, sourceID uuid.UUID, from, to time.Time) ([]normalization.CanonicalObservation, error)
 }
 
 type Service struct {
-	repo          *Repository
+	repo          indicatorRepo
 	normRepo      NormalizationRepository
 	logger        *slog.Logger
 }
 
-func NewService(repo *Repository, normRepo NormalizationRepository, logger *slog.Logger) *Service {
+func NewService(repo indicatorRepo, normRepo NormalizationRepository, logger *slog.Logger) *Service {
 	return &Service{
 		repo:     repo,
 		normRepo: normRepo,

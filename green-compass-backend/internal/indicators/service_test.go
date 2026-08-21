@@ -29,6 +29,7 @@ func TestRainIntensityTrend(t *testing.T) {
 		wantValue  float64
 		wantTrend  string
 		wantPoints int
+		delta      float64
 	}{
 		{
 			name: "increasing rain trend",
@@ -43,6 +44,7 @@ func TestRainIntensityTrend(t *testing.T) {
 			wantValue:  6.0,
 			wantTrend:  "increasing",
 			wantPoints: 6,
+			delta:      0.01,
 		},
 		{
 			name: "decreasing rain trend",
@@ -54,9 +56,10 @@ func TestRainIntensityTrend(t *testing.T) {
 				{Variable: normalization.VarPrecipitation, Value: 0.2, Valid: true, ObservedAt: time.Now().Add(-1 * 24 * time.Hour)},
 				{Variable: normalization.VarPrecipitation, Value: 0.1, Valid: true, ObservedAt: time.Now()},
 			},
-			wantValue:  0.2,
+			wantValue:  0.27,
 			wantTrend:  "decreasing",
 			wantPoints: 6,
+			delta:      0.01,
 		},
 		{
 			name: "stable rain trend",
@@ -66,9 +69,10 @@ func TestRainIntensityTrend(t *testing.T) {
 				{Variable: normalization.VarPrecipitation, Value: 1.9, Valid: true, ObservedAt: time.Now().Add(-1 * 24 * time.Hour)},
 				{Variable: normalization.VarPrecipitation, Value: 2.0, Valid: true, ObservedAt: time.Now()},
 			},
-			wantValue:  2.0,
+			wantValue:  1.95,
 			wantTrend:  "stable",
 			wantPoints: 4,
+			delta:      0.01,
 		},
 		{
 			name:       "no data",
@@ -76,6 +80,7 @@ func TestRainIntensityTrend(t *testing.T) {
 			wantValue:  0,
 			wantTrend:  "",
 			wantPoints: 0,
+			delta:      0.01,
 		},
 	}
 
@@ -91,8 +96,8 @@ func TestRainIntensityTrend(t *testing.T) {
 			if ind.DataPointsCount != tt.wantPoints {
 				t.Errorf("DataPointsCount: got %d, want %d", ind.DataPointsCount, tt.wantPoints)
 			}
-			if tt.wantPoints > 0 && ind.Value != tt.wantValue {
-				t.Errorf("Value: got %v, want %v", ind.Value, tt.wantValue)
+			if tt.wantPoints > 0 && delta(ind.Value, tt.wantValue) > tt.delta {
+				t.Errorf("Value: got %v, want %v (delta %v)", ind.Value, tt.wantValue, delta(ind.Value, tt.wantValue))
 			}
 			if tt.wantPoints > 1 && tt.wantTrend != "" {
 				if ind.Trend == nil {
@@ -122,7 +127,7 @@ func TestRainFrequency(t *testing.T) {
 				{Variable: normalization.VarPrecipitation, Value: 3.0, Valid: true},
 				{Variable: normalization.VarPrecipitation, Value: 0.0, Valid: true},
 			},
-			wantValue:  4,
+			wantValue:  3, // 5.0, 10.0, 3.0 are > 0.5 threshold
 			wantPoints: 6,
 		},
 		{

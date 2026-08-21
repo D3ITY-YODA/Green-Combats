@@ -8,15 +8,20 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
+type contentRepo interface {
+	Store(ctx context.Context, c *Content) error
+	GetLatestByType(ctx context.Context, placeID uuid.UUID, contentType string) (*Content, error)
+	ListForPlace(ctx context.Context, placeID uuid.UUID, limit int) ([]Content, error)
+}
+
 type Service struct {
-	repo   *Repository
+	repo   contentRepo
 	logger *slog.Logger
 }
 
-func NewService(repo *Repository, logger *slog.Logger) *Service {
+func NewService(repo contentRepo, logger *slog.Logger) *Service {
 	return &Service{
 		repo:   repo,
 		logger: logger,
@@ -29,7 +34,7 @@ func (s *Service) Generate(ctx context.Context, req GenerateRequest) (*Content, 
 	bodyText := s.generateBody(req)
 	callToAction := s.generateCallToAction(req)
 
-	sourceIndicatorIDs := make(pq.UUIDArray, 0, len(req.ApplicableIndicators))
+	sourceIndicatorIDs := make([]uuid.UUID, 0, len(req.ApplicableIndicators))
 	for _, ind := range req.ApplicableIndicators {
 		sourceIndicatorIDs = append(sourceIndicatorIDs, ind.IndicatorID)
 	}

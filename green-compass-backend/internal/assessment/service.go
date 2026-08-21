@@ -7,15 +7,20 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
+type assessmentRepo interface {
+	Store(ctx context.Context, a *Assessment) error
+	GetLatest(ctx context.Context, placeID uuid.UUID) (*Assessment, error)
+	GetForPeriod(ctx context.Context, placeID uuid.UUID, periodStart, periodEnd time.Time) (*Assessment, error)
+}
+
 type Service struct {
-	repo   *Repository
+	repo   assessmentRepo
 	logger *slog.Logger
 }
 
-func NewService(repo *Repository, logger *slog.Logger) *Service {
+func NewService(repo assessmentRepo, logger *slog.Logger) *Service {
 	return &Service{
 		repo:   repo,
 		logger: logger,
@@ -37,7 +42,7 @@ func (s *Service) Assess(ctx context.Context, req AssessmentRequest) (*Assessmen
 		UrgencyScore:         urgencyScore,
 		ConfidenceScore:      confidenceScore,
 		ApplicableIndicators: toUUIDArray(req.ApplicableIndicators),
-		AffectedGroups:       pq.Array(affectedGroups),
+		AffectedGroups:       affectedGroups,
 		AssessmentSummary:    s.generateSummary(req.ApplicableIndicators, urgencyScore),
 	}
 
@@ -78,7 +83,7 @@ func (s *Service) indicatorUrgency(code string, value float64, trend *string, re
 		return s.normalizeToScore(value, 0, 10) * 0.6
 	case "soil_moisture_level":
 		// Low moisture = high urgency (drought)
-		return (1.0 - s.normalizeToScore(value, 0, 100)) * 0.8
+		return (100.0 - s.normalizeToScore(value, 0, 100)) * 0.8
 	case "drought_stress":
 		// Drought index 0–100 maps directly to urgency
 		return value * 0.9
@@ -148,7 +153,7 @@ func (s *Service) determineAffectedGroups(indicators []IndicatorSignal) []string
 
 	for _, ind := range indicators {
 		switch ind.Code {
-		case "rain_intensity_trend", "rain_frequency", "drought_stress":
+		case "rain_intensity_trend", "rain_frequency":
 			groups["farmers"] = true
 		case "soil_moisture_level", "drought_stress":
 			groups["farmers"] = true
@@ -189,8 +194,8 @@ func (s *Service) generateSummary(indicators []IndicatorSignal, urgency int) *st
 }
 
 // toUUIDArray converts IndicatorSignal slice to UUID array
-func toUUIDArray(signals []IndicatorSignal) pq.UUIDArray {
-	arr := make(pq.UUIDArray, len(signals))
+func toUUIDArray(signals []IndicatorSignal) []uuid.UUID {
+	arr := make([]uuid.UUID, len(signals))
 	for i, sig := range signals {
 		arr[i] = sig.IndicatorID
 	}
