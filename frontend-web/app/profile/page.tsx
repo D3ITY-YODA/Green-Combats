@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Bell, Globe, Shield, HelpCircle, ChevronRight, Plus } from "lucide-react";
+import { MapPin, Bell, Globe, Shield, HelpCircle, ChevronRight, Plus, Accessibility } from "lucide-react";
 
 export default function ProfilePage() {
   const [language, setLanguage] = useState("English");
@@ -13,7 +13,7 @@ export default function ProfilePage() {
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-page font-bold text-forest-deep mb-1">Profile</h1>
-        <p className="text-metadata text-text-muted">Manage your preferences</p>
+        <p className="text-metadata text-text-muted">Manage your preferences and support options</p>
       </header>
 
       <div className="space-y-8">
@@ -47,7 +47,7 @@ export default function ProfilePage() {
               <select 
                 value={language} 
                 onChange={(e) => setLanguage(e.target.value)}
-                className="text-body text-text-muted bg-transparent focus:outline-none cursor-pointer"
+                className="text-body text-text-muted bg-transparent focus:outline-none cursor-pointer text-right"
               >
                 <option>English</option>
                 <option>French</option>
@@ -72,21 +72,30 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* 3. Support & Legal */}
+        {/* 3. Support (PDF: "Accessibility, Privacy, Help") */}
         <section>
           <h2 className="text-section font-semibold text-text-charcoal mb-3">Support</h2>
           <div className="space-y-2">
-            <button className="w-full flex items-center justify-between rounded-xl border border-background-stone bg-background p-4 hover:bg-background-mist transition-colors">
+            <button className="w-full flex items-center justify-between rounded-xl border border-background-stone bg-background p-4 hover:bg-background-mist transition-colors text-left">
               <div className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-forest" />
                 <span className="text-body text-text-charcoal">Privacy & Security</span>
               </div>
               <ChevronRight className="h-4 w-4 text-text-muted" />
             </button>
-            <button className="w-full flex items-center justify-between rounded-xl border border-background-stone bg-background p-4 hover:bg-background-mist transition-colors">
+            
+            <button className="w-full flex items-center justify-between rounded-xl border border-background-stone bg-background p-4 hover:bg-background-mist transition-colors text-left">
               <div className="flex items-center gap-3">
                 <HelpCircle className="h-5 w-5 text-forest" />
                 <span className="text-body text-text-charcoal">Help & About</span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-text-muted" />
+            </button>
+
+            <button className="w-full flex items-center justify-between rounded-xl border border-background-stone bg-background p-4 hover:bg-background-mist transition-colors text-left">
+              <div className="flex items-center gap-3">
+                <Accessibility className="h-5 w-5 text-forest" />
+                <span className="text-body text-text-charcoal">Accessibility</span>
               </div>
               <ChevronRight className="h-4 w-4 text-text-muted" />
             </button>
