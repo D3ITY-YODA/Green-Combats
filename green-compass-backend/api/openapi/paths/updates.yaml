@@ -1,0 +1,47 @@
+paths:
+  /v1/updates:
+    get:
+      summary: List paginated updates for the user's saved places
+      description: >-
+        Returns a paginated list of content updates (today, forecast, alert)
+        for places the authenticated user has saved. Optionally filter by
+        a specific place.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: place_id
+          in: query
+          required: false
+          description: Filter to updates for a specific place
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Paginated list of updates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [success], default: success }
+                  data:
+                    type: object
+                    properties:
+                      updates:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Update'
+                  meta:
+                    type: object
+                    properties:
+                      timestamp: { type: string, format: date-time }
+                      pagination:
+                        $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'

@@ -1,0 +1,42 @@
+/* styles/tokens.css */
+
+:root {
+  /* --- Backgrounds --- */
+  --color-warm-white: #FAFAF9; /* Soft off-white for public app */
+  --color-mist: #F3F4F6;       /* Cool gray for console background */
+  --color-soft-sage: #F0FDF4;  /* Very light green for hover states */
+  
+  /* --- Text & Icons --- */
+  --color-charcoal: #1C1917;   /* Primary text, high contrast */
+  --color-muted: #78716C;      /* Secondary text, subtle */
+  --color-forest: #14532D;     /* Primary brand green */
+  --color-sage: #65A30D;       /* Secondary green, accents */
+  
+  /* --- Status & Alerts --- */
+  --color-important: #EA580C;  /* Orange for important updates */
+  --color-warning: #D97706;    /* Amber for warnings */
+  --color-urgent: #DC2626;     /* Red for emergencies */
+  
+  /* --- Borders & Surfaces --- */
+  --color-stone: #E7E5E4;      /* Standard borders and dividers */
+}
+
+/* Dark mode support (optional, based on system preference) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-warm-white: #0C0A09;
+    --color-mist: #18181B;
+    --color-soft-sage: #14532D;
+    
+    --color-charcoal: #FAFAF9;
+    --color-muted: #A8A29E;
+    --color-forest: #4ADE80;
+    --color-sage: #84CC16;
+    
+    --color-important: #FB923C;
+    --color-warning: #FBBF24;
+    --color-urgent: #F87171;
+    
+    --color-stone: #292524;
+  }
+}

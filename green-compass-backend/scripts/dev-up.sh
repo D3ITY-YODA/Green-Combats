@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")/../deployments/compose"
+
+docker compose up -d --wait
+
+echo
+echo "dev dependencies ready:"
+docker compose ps
