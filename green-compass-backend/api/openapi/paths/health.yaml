@@ -1,21 +1,50 @@
-get:
-  tags: [health]
-  summary: Health check
-  security: []
-  responses:
-    '200':
-      description: Service is healthy
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: ok
-              version:
-                type: string
-                example: dev
-              timestamp:
-                type: string
-                format: date-time
+live:
+  get:
+    tags: [health]
+    summary: Liveness probe
+    security: []
+    responses:
+      '200':
+        description: Service is alive
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    status: { type: string, example: ok }
+                    version: { type: string, example: dev }
+                    uptime_seconds: { type: integer }
+                meta:
+                  $ref: './components/schemas.yaml#/ResponseMeta'
+
+ready:
+  get:
+    tags: [health]
+    summary: Readiness probe
+    security: []
+    responses:
+      '200':
+        description: Service is ready to serve traffic
+      '503':
+        description: Dependencies unavailable
+
+startup:
+  get:
+    tags: [health]
+    summary: Startup probe
+    security: []
+    responses:
+      '200':
+        description: Service has completed startup
+
+status:
+  get:
+    tags: [health]
+    summary: Legacy health check
+    security: []
+    responses:
+      '200':
+        description: Service is healthy

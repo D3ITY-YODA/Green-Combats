@@ -4,7 +4,14 @@ info:
   description: |
     Location-aware climate and environmental information service.
     Provides plain-language updates, community observations, and institutional reporting.
-  version: 1.0.0
+
+    All responses use a standard envelope:
+    - Success: `{ "data": ..., "meta": { "request_id", "generated_at", "pagination"? } }`
+    - Error: `{ "error": { "code", "message", "request_id" } }`
+
+    Mutating requests should send an `Idempotency-Key` header; repeated keys
+    return the original response. Rate limits return `429` with `Retry-After`.
+  version: 1.1.0
   contact:
     name: GreenCompass Team
 
@@ -22,31 +29,39 @@ tags:
   - name: places
     description: Location and place management
   - name: preferences
-    description: User preferences and saved places
-  - name: updates
-    description: Climate updates and content
+    description: User saved places
   - name: context
-    description: User context for today screen
+    description: Place context and Today screen
   - name: explore
-    description: Discovery and exploration
+    description: Topic-scoped indicator exploration
+  - name: updates
+    description: Climate updates feed
   - name: observations
-    description: Community observations and reports
+    description: Community observations
   - name: reports
     description: Institutional review queue
   - name: notifications
     description: Notification preferences and records
+  - name: console
+    description: Institutional console (overview, sources, projects)
   - name: audit
     description: Audit trail
   - name: projects
     description: Institutional projects
   - name: reporting
     description: Impact metrics and dashboards
+  - name: integrations
+    description: Provider webhooks (SMS, USSD, push, source callbacks)
   - name: health
-    description: Health check
+    description: Health checks and metrics
 
 paths:
-  /health:
-    $ref: './paths/health.yaml'
+  /health/live:
+    $ref: './paths/health.yaml#/live'
+  /health/ready:
+    $ref: './paths/health.yaml#/ready'
+  /health/startup:
+    $ref: './paths/health.yaml#/startup'
 
   /auth/register:
     $ref: './paths/auth.yaml#/register'
@@ -64,38 +79,88 @@ paths:
 
   /places:
     $ref: './paths/places.yaml'
+  /places/search:
+    $ref: './paths/places.yaml#/search'
+  /places/{place_id}/today:
+    $ref: './paths/context.yaml#/today'
+  /places/{place_id}/context:
+    $ref: './paths/context.yaml#/placeContext'
+  /places/{place_id}/explore:
+    $ref: './paths/explore.yaml#/byPlace'
+  /places/{place_id}/local-outlook:
+    $ref: './paths/explore.yaml#/topic'
+  /places/{place_id}/seasonal:
+    $ref: './paths/explore.yaml#/topic'
+  /places/{place_id}/water:
+    $ref: './paths/explore.yaml#/topic'
+  /places/{place_id}/land-ecosystems:
+    $ref: './paths/explore.yaml#/topic'
+  /places/{place_id}/food-agriculture:
+    $ref: './paths/explore.yaml#/topic'
+  /places/{place_id}/community:
+    $ref: './paths/explore.yaml#/topic'
 
-  /preferences:
+  /me/places:
     $ref: './paths/context.yaml#/preferences'
+  /me/places/{place_id}:
+    $ref: './paths/context.yaml#/savedPlace'
 
   /updates:
     $ref: './paths/updates.yaml'
-
+  /updates/{update_id}:
+    $ref: './paths/updates.yaml#/detail'
+  /updates/{update_id}/acknowledge:
+    $ref: './paths/updates.yaml#/acknowledge'
   /explore:
-    $ref: './paths/explore.yaml'
-
-  /context:
-    $ref: './paths/context.yaml#/context'
+    $ref: './paths/explore.yaml#/global'
 
   /observations:
     $ref: './paths/observations.yaml'
 
-  /reports:
-    $ref: './paths/reports.yaml'
+  /report-types:
+    $ref: './paths/reports.yaml#/types'
+  /reports/pending:
+    $ref: './paths/reports.yaml#/pending'
+  /reports/{id}:
+    $ref: './paths/reports.yaml#/detail'
+  /reports/{id}/verify:
+    $ref: './paths/reports.yaml#/verify'
 
   /notifications:
     $ref: './paths/notifications.yaml#/notifications'
   /notifications/preferences:
     $ref: './paths/notifications.yaml#/preferences'
 
+  /console/overview:
+    $ref: './paths/console.yaml#/overview'
+  /console/sources:
+    $ref: './paths/console.yaml#/sources'
+  /console/projects:
+    $ref: './paths/console.yaml#/projects'
+  /console/activity:
+    $ref: './paths/console.yaml#/activity'
+
   /audit:
     $ref: './paths/console.yaml#/audit'
 
   /projects:
-    $ref: './paths/console.yaml#/projects'
+    $ref: './paths/console.yaml#/projectsCrud'
 
-  /reporting:
-    $ref: './paths/reports.yaml#/reporting'
+  /reporting/delivery:
+    $ref: './paths/reports.yaml#/deliveryStats'
+  /reporting/dashboard:
+    $ref: './paths/reports.yaml#/dashboard'
+
+  /integrations/sms/inbound:
+    $ref: './paths/integrations.yaml#/smsInbound'
+  /integrations/sms/delivery:
+    $ref: './paths/integrations.yaml#/smsDelivery'
+  /integrations/ussd/session:
+    $ref: './paths/integrations.yaml#/ussdSession'
+  /integrations/push/receipt:
+    $ref: './paths/integrations.yaml#/pushReceipt'
+  /integrations/sources/{source_key}/callback:
+    $ref: './paths/integrations.yaml#/sourceCallback'
 
 components:
   schemas:

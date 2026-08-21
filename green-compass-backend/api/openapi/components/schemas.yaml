@@ -63,26 +63,48 @@ components:
       type: object
       properties:
         page: { type: integer, minimum: 1 }
-        limit: { type: integer, minimum: 1 }
+        page_size: { type: integer, minimum: 1 }
         total: { type: integer, minimum: 0 }
-        has_next: { type: boolean }
-      required: [page, limit, total, has_next]
+        next_cursor: { type: string, nullable: true }
+      required: [page, page_size, total]
 
-    Meta:
+    ResponseMeta:
       type: object
       properties:
+        request_id: { type: string }
+        generated_at: { type: string, format: date-time }
         pagination:
           $ref: '#/components/schemas/PaginationMeta'
-        timestamp: { type: string, format: date-time }
-      required: [timestamp]
+      required: [request_id, generated_at]
+
+    SuccessResponse:
+      type: object
+      properties:
+        data: {}
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required: [data, meta]
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items: {}
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required: [data, meta]
 
     Envelope:
       type: object
+      description: Legacy alias for the response envelope.
       properties:
-        status: { type: string, enum: [success, error], default: success }
         data: {}
         meta:
-          $ref: '#/components/schemas/Meta'
+          $ref: '#/components/schemas/ResponseMeta'
         error:
           $ref: '#/components/schemas/ErrorDetail'
 
@@ -91,6 +113,7 @@ components:
       properties:
         code: { type: string }
         message: { type: string }
+        request_id: { type: string }
         details: {}
       required: [code, message]
 
@@ -346,8 +369,11 @@ components:
     ErrorResponse:
       type: object
       properties:
-        status:
-          type: string
-          enum: [error]
         error:
-          $ref: '#/components/schemas/ErrorDetail'
+          type: object
+          properties:
+            code: { type: string, example: NOT_FOUND }
+            message: { type: string, example: The requested resource could not be found. }
+            request_id: { type: string, example: req_123 }
+          required: [code, message, request_id]
+      required: [error]

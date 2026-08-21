@@ -1,103 +1,92 @@
-paths:
-  /v1/reports/pending:
-    get:
-      summary: List pending reports for institutional review
-      description: >-
-        Returns a paginated list of community observations awaiting
-        institutional verification. Requires platform admin role.
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - name: limit
-          in: query
-          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
-      responses:
-        '200':
-          description: Paginated list of pending reports
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, enum: [success], default: success }
-                  data:
-                    type: object
-                    properties:
-                      reports:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Report'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          description: Forbidden
-
-  /v1/reports/{id}:
-    get:
-      summary: Get a single report
-      description: >-
-        Returns details for a specific observation report. Requires
-        platform admin role.
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Report details
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, enum: [success], default: success }
-                  data:
-                    $ref: '#/components/schemas/Report'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          description: Forbidden
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /v1/reports/{id}/verify:
-    patch:
-      summary: Verify or reject a report
-      description: >-
-        Update the status of an observation to verified, rejected, or
-        flagged. Requires platform admin role.
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      requestBody:
-        required: true
+types:
+  get:
+    tags: [reports]
+    summary: List available community report types
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200':
+        description: Report type catalogue
         content:
           application/json:
             schema:
-              type: object
-              required: [status]
-              properties:
-                status:
-                  type: string
-                  enum: [verified, rejected, flagged]
-      responses:
-        '200':
-          description: Updated report
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, enum: [success], default: success }
-                  data:
-                    $ref: '#/components/schemas/Report'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          description: Forbidden
-        '404':
-          $ref: '#/components/responses/NotFound'
+              $ref: '../components/schemas.yaml#/SuccessResponse'
+
+pending:
+  get:
+    tags: [reports]
+    summary: List pending reports for institutional review
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: limit, in: query, schema: { type: integer, default: 25, maximum: 100 } }
+    responses:
+      '200':
+        description: Pending report queue
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/SuccessResponse'
+      '403':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+detail:
+  get:
+    tags: [reports]
+    summary: Get a single report
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    responses:
+      '200':
+        description: Report detail
+      '404':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+verify:
+  patch:
+    tags: [reports]
+    summary: Verify or reject a report (institutional reviewer)
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [verified, rejected] }
+    responses:
+      '200':
+        description: Updated report
+      '403':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+deliveryStats:
+  get:
+    tags: [reporting]
+    summary: Notification delivery metrics for a place
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: query, required: true, schema: { type: string, format: uuid } }
+      - { name: period_start, in: query, schema: { type: string, format: date-time } }
+      - { name: period_end, in: query, schema: { type: string, format: date-time } }
+    responses:
+      '200':
+        description: Delivery statistics
+
+dashboard:
+  get:
+    tags: [reporting]
+    summary: Combined impact dashboard
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: org_id, in: query, schema: { type: string, format: uuid } }
+      - { name: place_id, in: query, schema: { type: string, format: uuid } }
+      - { name: period_start, in: query, schema: { type: string, format: date-time } }
+      - { name: period_end, in: query, schema: { type: string, format: date-time } }
+    responses:
+      '200':
+        description: Dashboard payload

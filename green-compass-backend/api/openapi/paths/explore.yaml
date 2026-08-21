@@ -1,52 +1,62 @@
-paths:
-  /v1/explore:
-    get:
-      summary: Explore computed indicators across places
-      description: >-
-        Returns a paginated list of computed environmental indicators for
-        exploration and discovery. Indicators are ordered by most recently
-        computed. Can be filtered by category and/or place.
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - name: category
-          in: query
-          required: false
-          description: Filter by indicator category (weather, water, agriculture, air_quality)
-          schema: { type: string }
-        - name: place_id
-          in: query
-          required: false
-          description: Filter to indicators for a specific place
-          schema: { type: string, format: uuid }
-        - name: page
-          in: query
-          schema: { type: integer, minimum: 1, default: 1 }
-        - name: limit
-          in: query
-          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
-      responses:
-        '200':
-          description: Paginated list of explore indicators
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, enum: [success], default: success }
-                  data:
-                    type: object
-                    properties:
-                      indicators:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/ExploreIndicator'
-                  meta:
-                    type: object
-                    properties:
-                      timestamp: { type: string, format: date-time }
-                      pagination:
-                        $ref: '#/components/schemas/PaginationMeta'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+global:
+  get:
+    tags: [explore]
+    summary: Explore computed indicators across places
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: category, in: query, schema: { type: string }, description: Filter by category (weather, water, agriculture, air_quality) }
+      - { name: place_id, in: query, schema: { type: string, format: uuid } }
+      - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+      - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+    responses:
+      '200':
+        description: Paginated list of explore indicators
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/PaginatedResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+byPlace:
+  get:
+    tags: [explore]
+    summary: Explore indicators for a specific place
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: category, in: query, schema: { type: string } }
+      - { name: page, in: query, schema: { type: integer, default: 1 } }
+      - { name: limit, in: query, schema: { type: integer, default: 50 } }
+    responses:
+      '200':
+        description: Place-scoped indicator list
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/PaginatedResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+topic:
+  get:
+    tags: [explore]
+    summary: Topic-scoped indicators for a place
+    description: >-
+      Served at /places/{place_id}/local-outlook, /seasonal, /water,
+      /land-ecosystems, /food-agriculture and /community. Each route maps to
+      its topic key; only applicable indicators are returned (no empty cards).
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: page, in: query, schema: { type: integer, default: 1 } }
+      - { name: limit, in: query, schema: { type: integer, default: 50 } }
+    responses:
+      '200':
+        description: Topic indicators for the place
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/PaginatedResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'

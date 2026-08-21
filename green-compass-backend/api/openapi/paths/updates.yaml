@@ -1,47 +1,50 @@
-paths:
-  /v1/updates:
-    get:
-      summary: List paginated updates for the user's saved places
-      description: >-
-        Returns a paginated list of content updates (today, forecast, alert)
-        for places the authenticated user has saved. Optionally filter by
-        a specific place.
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - name: page
-          in: query
-          schema: { type: integer, minimum: 1, default: 1 }
-        - name: limit
-          in: query
-          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
-        - name: place_id
-          in: query
-          required: false
-          description: Filter to updates for a specific place
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Paginated list of updates
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, enum: [success], default: success }
-                  data:
-                    type: object
-                    properties:
-                      updates:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Update'
-                  meta:
-                    type: object
-                    properties:
-                      timestamp: { type: string, format: date-time }
-                      pagination:
-                        $ref: '#/components/schemas/PaginationMeta'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+list:
+  get:
+    tags: [updates]
+    summary: List updates for user's saved places
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: place_id, in: query, schema: { type: string, format: uuid } }
+      - { name: page, in: query, schema: { type: integer, default: 1 } }
+      - { name: limit, in: query, schema: { type: integer, default: 20 } }
+    responses:
+      '200':
+        description: Paginated updates feed
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/PaginatedResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+detail:
+  get:
+    tags: [updates]
+    summary: Get a single update
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: update_id, in: path, required: true, schema: { type: string, format: uuid } }
+    responses:
+      '200':
+        description: Update detail
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/SuccessResponse'
+      '404':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+acknowledge:
+  post:
+    tags: [updates]
+    summary: Acknowledge an update
+    description: Records that the authenticated user has seen the update.
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      - { name: update_id, in: path, required: true, schema: { type: string, format: uuid } }
+    responses:
+      '200':
+        description: Acknowledged
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
