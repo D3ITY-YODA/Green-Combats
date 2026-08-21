@@ -15,6 +15,7 @@ import javax.inject.Inject
 data class TodayUiState(
     val isLoading: Boolean = true,
     val data: TodayData? = null,
+    val isOffline: Boolean = false,
     val errorMessage: String? = null
 )
 
@@ -23,7 +24,9 @@ class TodayViewModel @Inject constructor(
     private val repository: GreenCompassRepository
 ) : ViewModel() {
 
-    private val currentPlaceId = "1" // "1" is Lower Valley in MockData
+    // Hardcoded to "1" (Lower Valley) for demo. 
+    // In a real app, this would come from a PlaceManager/Settings repository.
+    private val currentPlaceId = "1" 
 
     private val _uiState = MutableStateFlow(TodayUiState())
     val uiState: StateFlow<TodayUiState> = _uiState.asStateFlow()
@@ -43,5 +46,14 @@ class TodayViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun toggleOfflineMode() {
+        _uiState.update { it.copy(isOffline = !it.isOffline) }
+    }
+    
+    fun retry() {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        observeData()
     }
 }

@@ -8,6 +8,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,61 +20,53 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @Composable
 fun LoadingSkeleton(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition()
     val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.7f,
+        initialValue = 0.3f, targetValue = 0.7f,
         animationSpec = infiniteRepeatable(animation = tween(1000, easing = LinearEasing))
     )
-
     Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(GreenCompassColors.Stone.copy(alpha = alpha))
+        modifier = modifier.clip(RoundedCornerShape(12.dp)).background(GreenCompassColors.Stone.copy(alpha = alpha))
     )
 }
 
 @Composable
-fun EmptyStateView(
-    icon: ImageVector,
-    title: String,
-    message: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+fun EmptyStateView(icon: ImageVector, title: String, message: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth().padding(AppSpacing.xxl), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = icon, contentDescription = null, tint = GreenCompassColors.Sage, modifier = Modifier.size(64.dp))
+        Spacer(modifier = Modifier.height(AppSpacing.md))
+        Text(text = title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(AppSpacing.xs))
+        Text(text = message, style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText, textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
+fun ErrorStateView(message: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth().padding(AppSpacing.xxl), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = Icons.Outlined.ErrorOutline, contentDescription = null, tint = GreenCompassColors.EmergencyRed, modifier = Modifier.size(64.dp))
+        Spacer(modifier = Modifier.height(AppSpacing.md))
+        Text(text = "Something went wrong", style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(AppSpacing.xs))
+        Text(text = message, style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(AppSpacing.xl))
+        PrimaryButton(text = "Try again", onClick = onRetry, modifier = Modifier.width(200.dp))
+    }
+}
+
+@Composable
+fun OfflineBanner(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth().background(GreenCompassColors.Mist).padding(AppSpacing.md),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = GreenCompassColors.Sage,
-            modifier = Modifier.size(64.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = GreenCompassColors.Charcoal,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = message,
-            fontSize = 15.sp,
-            color = GreenCompassColors.MutedText,
-            textAlign = TextAlign.Center
-        )
+        Icon(imageVector = Icons.Outlined.CloudOff, contentDescription = null, tint = GreenCompassColors.MutedText, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(AppSpacing.sm))
+        Text(text = "You're offline. Showing information saved on this device.", style = GreenCompassTypography.bodySmall, color = GreenCompassColors.MutedText)
     }
 }

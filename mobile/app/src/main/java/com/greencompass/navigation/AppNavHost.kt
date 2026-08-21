@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.greencompass.feature.onboarding.*
 import com.greencompass.feature.today.TodayRoute
+import com.greencompass.feature.explore.ExploreScreen
 
 @Composable
 fun AppNavHost() {
@@ -152,6 +153,9 @@ fun AppNavHost() {
         }
         composable<AppRoute.Today> {
             TodayRoute()
+        }
+        composable<AppRoute.Explore> {
+            ExploreScreen()
         }
     }
 }

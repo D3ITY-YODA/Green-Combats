@@ -11,7 +11,6 @@ sealed interface AppRoute {
     @Serializable data object GoogleSignIn : AppRoute
     @Serializable data object PhoneEmailSignIn : AppRoute
     @Serializable data object VerificationCode : AppRoute
-    
     @Serializable data object OrganizationSearch : AppRoute
     @Serializable data object OrganizationSelection : AppRoute
     @Serializable data object RequestAccess : AppRoute
@@ -26,4 +25,5 @@ sealed interface AppRoute {
     @Serializable data object SetupComplete : AppRoute
     
     @Serializable data object Today : AppRoute
+    @Serializable data object Explore : AppRoute
 }
