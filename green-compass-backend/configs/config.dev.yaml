@@ -1,0 +1,13 @@
+app_env: dev
+
+server:
+  host: ""
+  port: 8080
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 120s
+  shutdown_timeout: 15s
+
+logging:
+  level: info
+  format: json
