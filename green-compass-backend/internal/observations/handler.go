@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"green-compass-backend/internal/auth"
+	"green-compass-backend/pkg/httpx"
 )
 
 type API interface {
@@ -51,13 +52,13 @@ type createRequest struct {
 func (h *Handler) create(c *gin.Context) {
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
 	var req createRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
@@ -74,13 +75,14 @@ func (h *Handler) create(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, observationJSON(o))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusCreated, httpx.Success(observationJSON(o), requestID))
 }
 
 func (h *Handler) listMine(c *gin.Context) {
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
@@ -98,7 +100,8 @@ func (h *Handler) listMine(c *gin.Context) {
 	for _, item := range items {
 		response = append(response, observationJSON(&item))
 	}
-	c.JSON(http.StatusOK, gin.H{"observations": response})
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"observations": response}, requestID))
 }
 
 func (h *Handler) byID(c *gin.Context) {
@@ -108,7 +111,7 @@ func (h *Handler) byID(c *gin.Context) {
 	}
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
@@ -117,13 +120,14 @@ func (h *Handler) byID(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, observationJSON(o))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(observationJSON(o), requestID))
 }
 
 func (h *Handler) listPending(c *gin.Context) {
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
@@ -141,7 +145,8 @@ func (h *Handler) listPending(c *gin.Context) {
 	for _, item := range items {
 		response = append(response, observationJSON(&item))
 	}
-	c.JSON(http.StatusOK, gin.H{"observations": response})
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"observations": response}, requestID))
 }
 
 type verifyRequest struct {
@@ -156,17 +161,17 @@ func (h *Handler) verify(c *gin.Context) {
 	}
 	identity, ok := auth.IdentityFrom(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authenticated"})
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
 	var req verifyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 	if req.Status == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "status is required"})
+		httpx.HandleError(c, httpx.InvalidParam("status", "status is required"))
 		return
 	}
 
@@ -175,7 +180,8 @@ func (h *Handler) verify(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, observationJSON(o))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(observationJSON(o), requestID))
 }
 
 func pathID(c *gin.Context) (uuid.UUID, bool) {
@@ -240,12 +246,12 @@ func observationJSON(o *Observation) gin.H {
 func writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrInvalidData):
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httpx.HandleError(c, httpx.ErrBadRequest)
 	case errors.Is(err, ErrNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": "observation not found"})
+		httpx.HandleError(c, httpx.ErrNotFound)
 	case errors.Is(err, ErrNotAllowed):
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		httpx.HandleError(c, httpx.ErrForbidden)
 	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		httpx.HandleError(c, httpx.ErrInternal)
 	}
 }

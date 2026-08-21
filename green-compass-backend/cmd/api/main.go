@@ -100,7 +100,7 @@ func run() error {
 	}
 
 	router := gin.New()
-	router.Use(gin.Recovery(), httpx.RequestLogger(logger, clock.New()))
+	router.Use(gin.Recovery(), httpx.RequestLogger(logger, clock.New()), httpx.RequestIDMiddleware())
 
 	healthService := health.NewService(version, clock.New())
 	health.NewHandler(healthService).RegisterRoutes(router)

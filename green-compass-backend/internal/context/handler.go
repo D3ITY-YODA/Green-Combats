@@ -28,7 +28,9 @@ func NewHandler(svc API) *Handler {
 func (h *Handler) RegisterRoutes(router *gin.Engine, authMiddleware gin.HandlerFunc) {
 	group := router.Group("/v1")
 	group.Use(authMiddleware)
-	group.GET("/context/today", h.GetToday)
+	group.GET("/context/today", h.GetToday)                    // legacy
+	group.GET("/places/:place_id/today", h.GetTodayByPlace)   // spec: /places/{placeID}/today
+	group.GET("/places/:place_id/context", h.GetContext)      // spec: /places/{placeID}/context
 }
 
 // GetToday resolves the user's current context and returns today's content
@@ -71,5 +73,88 @@ func (h *Handler) GetToday(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(resp))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(resp, requestID))
+}
+
+// GetTodayByPlace returns today's content for a specific place
+// GET /v1/places/{place_id}/today
+func (h *Handler) GetTodayByPlace(c *gin.Context) {
+	identity, ok := auth.IdentityFrom(c.Request.Context())
+	if !ok {
+		httpx.HandleError(c, httpx.ErrUnauthorized)
+		return
+	}
+
+	placeIDStr := c.Param("place_id")
+	placeID, err := uuid.Parse(placeIDStr)
+	if err != nil {
+		httpx.HandleError(c, httpx.InvalidParam("place_id", "must be a valid UUID"))
+		return
+	}
+
+	resp, err := h.svc.ResolveContext(c.Request.Context(), ResolveContextRequest{
+		UserID:  identity.UserID,
+		PlaceID: &placeID,
+	})
+	if err != nil {
+		var appErr *httpx.AppError
+		if errors.As(err, &appErr) {
+			httpx.HandleError(c, err)
+			return
+		}
+		switch err {
+		case ErrNoPlace:
+			httpx.HandleError(c, httpx.NotFound("no place assigned to user"))
+		case ErrPlaceNotFound:
+			httpx.HandleError(c, httpx.ErrNotFound)
+		default:
+			httpx.HandleError(c, httpx.ErrInternal)
+		}
+		return
+	}
+
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(resp, requestID))
+}
+
+// GetContext returns the context for a specific place
+// GET /v1/places/{place_id}/context
+func (h *Handler) GetContext(c *gin.Context) {
+	identity, ok := auth.IdentityFrom(c.Request.Context())
+	if !ok {
+		httpx.HandleError(c, httpx.ErrUnauthorized)
+		return
+	}
+
+	placeIDStr := c.Param("place_id")
+	placeID, err := uuid.Parse(placeIDStr)
+	if err != nil {
+		httpx.HandleError(c, httpx.InvalidParam("place_id", "must be a valid UUID"))
+		return
+	}
+
+	resp, err := h.svc.ResolveContext(c.Request.Context(), ResolveContextRequest{
+		UserID:  identity.UserID,
+		PlaceID: &placeID,
+	})
+	if err != nil {
+		var appErr *httpx.AppError
+		if errors.As(err, &appErr) {
+			httpx.HandleError(c, err)
+			return
+		}
+		switch err {
+		case ErrNoPlace:
+			httpx.HandleError(c, httpx.NotFound("no place assigned to user"))
+		case ErrPlaceNotFound:
+			httpx.HandleError(c, httpx.ErrNotFound)
+		default:
+			httpx.HandleError(c, httpx.ErrInternal)
+		}
+		return
+	}
+
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(resp, requestID))
 }

@@ -2,50 +2,52 @@ package httpx
 
 import (
 	"time"
+	"github.com/google/uuid"
 )
 
 type Envelope struct {
-	Status string      `json:"status"`
-	Data   interface{} `json:"data"`
-	Meta   *Meta       `json:"meta,omitempty"`
-	Error  *ErrorDetail `json:"error,omitempty"`
+	Data interface{} `json:"data"`
+	Meta *Meta       `json:"meta,omitempty"`
+	Error *ErrorDetail `json:"error,omitempty"`
 }
 
 type Meta struct {
-	Pagination *PaginationMeta `json:"pagination,omitempty"`
-	Timestamp  time.Time       `json:"timestamp"`
+	RequestID  string           `json:"request_id"`
+	Pagination *PaginationMeta  `json:"pagination,omitempty"`
+	Timestamp  time.Time        `json:"generated_at"`
 }
 
 type PaginationMeta struct {
-	Page    int `json:"page"`
-	Limit   int `json:"limit"`
-	Total   int `json:"total"`
-	HasNext bool `json:"has_next"`
+	Page       int `json:"page"`
+	PageSize   int `json:"page_size"`
+	Total      int `json:"total"`
+	NextCursor string `json:"next_cursor,omitempty"`
 }
 
 type ErrorDetail struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Details map[string]interface{} `json:"details,omitempty"`
+	Code      string                 `json:"code"`
+	Message   string                 `json:"message"`
+	RequestID string                 `json:"request_id"`
+	Details   map[string]interface{} `json:"details,omitempty"`
 }
 
 // Success returns a successful response envelope
-func Success(data interface{}) *Envelope {
+func Success(data interface{}, requestID string) *Envelope {
 	return &Envelope{
-		Status: "success",
-		Data:   data,
+		Data: data,
 		Meta: &Meta{
+			RequestID: requestID,
 			Timestamp: time.Now().UTC(),
 		},
 	}
 }
 
 // SuccessWithPagination returns a paginated response envelope
-func SuccessWithPagination(data interface{}, pagination *PaginationMeta) *Envelope {
+func SuccessWithPagination(data interface{}, pagination *PaginationMeta, requestID string) *Envelope {
 	return &Envelope{
-		Status: "success",
-		Data:   data,
+		Data: data,
 		Meta: &Meta{
+			RequestID:  requestID,
 			Pagination: pagination,
 			Timestamp:  time.Now().UTC(),
 		},
@@ -53,32 +55,34 @@ func SuccessWithPagination(data interface{}, pagination *PaginationMeta) *Envelo
 }
 
 // Error returns an error response envelope
-func Error(code, message string) *Envelope {
+func Error(code, message, requestID string) *Envelope {
 	return &Envelope{
-		Status: "error",
-		Data:   nil,
+		Data: nil,
 		Meta: &Meta{
+			RequestID: requestID,
 			Timestamp: time.Now().UTC(),
 		},
 		Error: &ErrorDetail{
-			Code:    code,
-			Message: message,
+			Code:      code,
+			Message:   message,
+			RequestID: requestID,
 		},
 	}
 }
 
 // ErrorWithDetails returns an error response with additional context
-func ErrorWithDetails(code, message string, details map[string]interface{}) *Envelope {
+func ErrorWithDetails(code, message, requestID string, details map[string]interface{}) *Envelope {
 	return &Envelope{
-		Status: "error",
-		Data:   nil,
+		Data: nil,
 		Meta: &Meta{
+			RequestID: requestID,
 			Timestamp: time.Now().UTC(),
 		},
 		Error: &ErrorDetail{
-			Code:    code,
-			Message: message,
-			Details: details,
+			Code:      code,
+			Message:   message,
+			RequestID: requestID,
+			Details:   details,
 		},
 	}
 }

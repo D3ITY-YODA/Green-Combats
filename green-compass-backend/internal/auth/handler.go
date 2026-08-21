@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"green-compass-backend/internal/users"
+	"green-compass-backend/pkg/httpx"
 )
 
 type API interface {
@@ -56,7 +57,7 @@ type tokenResponse struct {
 func (h *Handler) register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
@@ -72,10 +73,11 @@ func (h *Handler) register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusCreated, httpx.Success(gin.H{
 		"user":   sessionUserJSON(result.User.ID, result.User.DisplayName, result.User.Email, result.User.PhoneNumber, result.User.Language, result.User.IsPlatformAdmin),
 		"tokens": toTokenResponse(&result.Tokens),
-	})
+	}, requestID))
 }
 
 func (h *Handler) login(c *gin.Context) {
@@ -84,7 +86,7 @@ func (h *Handler) login(c *gin.Context) {
 		Password   string `json:"password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
@@ -93,7 +95,8 @@ func (h *Handler) login(c *gin.Context) {
 		writeServiceError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"tokens": toTokenResponse(pair)})
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"tokens": toTokenResponse(pair)}, requestID))
 }
 
 func (h *Handler) refresh(c *gin.Context) {
@@ -101,7 +104,7 @@ func (h *Handler) refresh(c *gin.Context) {
 		RefreshToken string `json:"refresh_token"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
@@ -110,7 +113,8 @@ func (h *Handler) refresh(c *gin.Context) {
 		writeServiceError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"tokens": toTokenResponse(pair)})
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"tokens": toTokenResponse(pair)}, requestID))
 }
 
 func (h *Handler) logout(c *gin.Context) {
@@ -118,7 +122,7 @@ func (h *Handler) logout(c *gin.Context) {
 		RefreshToken string `json:"refresh_token"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
@@ -126,13 +130,14 @@ func (h *Handler) logout(c *gin.Context) {
 		writeServiceError(c, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusNoContent, httpx.Success(nil, requestID))
 }
 
 func (h *Handler) me(c *gin.Context) {
 	identity, ok := IdentityFrom(c.Request.Context())
 	if !ok {
-		abortUnauthorized(c, "not authenticated")
+		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
 
@@ -141,9 +146,10 @@ func (h *Handler) me(c *gin.Context) {
 		writeServiceError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"user": sessionUserJSON(
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"user": sessionUserJSON(
 		sessionUser.ID, sessionUser.DisplayName, sessionUser.Email, sessionUser.PhoneNumber, sessionUser.Language, sessionUser.IsPlatformAdmin,
-	)})
+	)}, requestID))
 }
 
 func toTokenResponse(pair *TokenPair) tokenResponse {
@@ -171,16 +177,16 @@ func sessionUserJSON(id uuid.UUID, displayName string, email, phone *string, lan
 func writeServiceError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, users.ErrInvalidData):
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httpx.HandleError(c, httpx.ErrBadRequest)
 	case errors.Is(err, users.ErrEmailTaken), errors.Is(err, users.ErrPhoneTaken):
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		httpx.HandleError(c, httpx.ErrConflict)
 	case errors.Is(err, ErrInvalidCredentials):
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		httpx.HandleError(c, &httpx.AppError{Code: "INVALID_CREDENTIALS", Message: "invalid credentials", Status: http.StatusUnauthorized})
 	case errors.Is(err, ErrTokenReuse):
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "refresh token reuse detected; all sessions revoked", "code": "token_reuse"})
+		httpx.HandleError(c, &httpx.AppError{Code: "TOKEN_REUSE", Message: "refresh token reuse detected; all sessions revoked", Status: http.StatusUnauthorized})
 	case errors.Is(err, ErrInvalidToken):
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
+		httpx.HandleError(c, &httpx.AppError{Code: "INVALID_TOKEN", Message: "invalid or expired token", Status: http.StatusUnauthorized})
 	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		httpx.HandleError(c, httpx.ErrInternal)
 	}
 }

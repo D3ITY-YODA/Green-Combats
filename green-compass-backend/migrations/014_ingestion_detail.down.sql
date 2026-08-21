@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS raw_assets;
+DROP TABLE IF EXISTS source_runs;
+DROP TABLE IF EXISTS datasets;

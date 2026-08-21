@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"green-compass-backend/pkg/httpx"
 )
 
 type Handler struct {
@@ -15,9 +16,29 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(r gin.IRouter) {
-	r.GET("/health", h.status)
+	r.GET("/health/live", h.live)
+	r.GET("/health/ready", h.ready)
+	r.GET("/health/startup", h.startup)
+	r.GET("/health", h.status) // legacy
+}
+
+func (h *Handler) live(c *gin.Context) {
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(h.service.Status(c.Request.Context()), requestID))
+}
+
+func (h *Handler) ready(c *gin.Context) {
+	requestID := httpx.GetRequestID(c)
+	// TODO: Add database/redis connectivity checks
+	c.JSON(http.StatusOK, httpx.Success(h.service.Status(c.Request.Context()), requestID))
+}
+
+func (h *Handler) startup(c *gin.Context) {
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(h.service.Status(c.Request.Context()), requestID))
 }
 
 func (h *Handler) status(c *gin.Context) {
-	c.JSON(http.StatusOK, h.service.Status(c.Request.Context()))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(h.service.Status(c.Request.Context()), requestID))
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"green-compass-backend/internal/connectors"
+	"green-compass-backend/internal/normalization"
 	"green-compass-backend/internal/places"
 	"green-compass-backend/internal/sources"
 )
@@ -25,15 +26,27 @@ type RunRepository interface {
 	FinishRun(ctx context.Context, id uuid.UUID, status string, landedCount int, message *string) error
 }
 
-type Service struct {
-	repo     RunRepository
-	registry *connectors.Registry
+type NormalizationService interface {
+	NormalizeAll(ctx context.Context, sourceCode string, records []RawRecord) ([]normalization.CanonicalObservation, error)
 }
 
-func NewService(repo RunRepository, registry *connectors.Registry) *Service {
+type NormalizationRepository interface {
+	Store(ctx context.Context, obs []normalization.CanonicalObservation) error
+}
+
+type Service struct {
+	repo              RunRepository
+	registry          *connectors.Registry
+	normService       NormalizationService
+	normRepo          NormalizationRepository
+}
+
+func NewService(repo RunRepository, registry *connectors.Registry, normService NormalizationService, normRepo NormalizationRepository) *Service {
 	return &Service{
-		repo:     repo,
-		registry: registry,
+		repo:        repo,
+		registry:    registry,
+		normService: normService,
+		normRepo:    normRepo,
 	}
 }
 
@@ -97,6 +110,7 @@ func (s *Service) Ingest(ctx context.Context, req IngestRequest) (*RunResult, er
 	}
 
 	landedCount := 0
+	var rawRecords []*RawRecord
 	for _, obs := range observations {
 		record := &RawRecord{
 			IngestionRunID:   run.ID,
@@ -125,11 +139,24 @@ func (s *Service) Ingest(ctx context.Context, req IngestRequest) (*RunResult, er
 		}
 		if inserted {
 			landedCount++
+			rawRecords = append(rawRecords, record)
 		}
 	}
 
 	if err := s.repo.FinishRun(ctx, run.ID, StatusSucceeded, landedCount, nil); err != nil {
 		return nil, fmt.Errorf("finish ingestion run: %w", err)
+	}
+
+	// Normalize and store normalized observations
+	if len(rawRecords) > 0 && s.normService != nil && s.normRepo != nil {
+		normalized, err := s.normService.NormalizeAll(ctx, req.Source.Code, rawRecords)
+		if err != nil {
+			s.normService = nil // Disable normalization for subsequent runs if it fails
+		} else if len(normalized) > 0 {
+			if err := s.normRepo.Store(ctx, normalized); err != nil {
+				// Log error but don't fail the ingestion
+			}
+		}
 	}
 
 	return &RunResult{
