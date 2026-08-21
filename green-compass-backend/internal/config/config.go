@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/goccy/go-yaml"
@@ -69,12 +70,17 @@ type Auth struct {
 	Issuer          string   `yaml:"issuer"`
 }
 
+type CORS struct {
+	AllowedOrigins []string `yaml:"allowed_origins"`
+}
+
 type Config struct {
 	AppEnv   string   `yaml:"app_env"`
 	Server   Server   `yaml:"server"`
 	Log      Logging  `yaml:"logging"`
 	Database Database `yaml:"database"`
 	Auth     Auth     `yaml:"auth"`
+	CORS     CORS     `yaml:"cors"`
 }
 
 type LoadOptions struct {
@@ -138,6 +144,9 @@ func Defaults() *Config {
 			AccessTokenTTL:  Duration(15 * time.Minute),
 			RefreshTokenTTL: Duration(30 * 24 * time.Hour),
 			Issuer:          "green-compass",
+		},
+		CORS: CORS{
+			AllowedOrigins: []string{"http://localhost:3000"},
 		},
 	}
 }
@@ -272,6 +281,10 @@ func applyEnvOverrides(cfg *Config, lookup func(string) (string, bool)) error {
 	applyString(&cfg.Auth.Secret, lookup, "GC_AUTH_SECRET")
 	applyString(&cfg.Auth.Issuer, lookup, "GC_AUTH_ISSUER")
 
+	if v, ok := lookup("GC_CORS_ALLOWED_ORIGINS"); ok && v != "" {
+		cfg.CORS.AllowedOrigins = parseCommaList(v)
+	}
+
 	for key, dst := range map[string]*Duration{
 		"GC_AUTH_ACCESS_TTL":  &cfg.Auth.AccessTokenTTL,
 		"GC_AUTH_REFRESH_TTL": &cfg.Auth.RefreshTokenTTL,
@@ -329,4 +342,16 @@ func applyString(dst *string, lookup func(string) (string, bool), key string) {
 	if v, ok := lookup(key); ok && v != "" {
 		*dst = v
 	}
+}
+
+func parseCommaList(raw string) []string {
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
