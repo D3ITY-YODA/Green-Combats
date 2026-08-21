@@ -67,7 +67,8 @@ func (h *Handler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, httpx.Success(gin.H{"organization": org}))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusCreated, httpx.Success(gin.H{"organization": org}, requestID))
 }
 
 // List returns organizations (placeholder for full implementation).
@@ -86,11 +87,12 @@ func (h *Handler) List(c *gin.Context) {
 		}
 	}
 
+	requestID := httpx.GetRequestID(c)
 	c.JSON(http.StatusOK, httpx.Success(gin.H{
 		"organizations": []interface{}{},
 		"page":          page,
 		"limit":         limit,
-	}))
+	}, requestID))
 }
 
 // GetByID returns a single organization.
@@ -108,7 +110,8 @@ func (h *Handler) GetByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"organization": org}))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"organization": org}, requestID))
 }
 
 // SetStatus updates an organization's status (admin only).
@@ -134,7 +137,7 @@ func (h *Handler) SetStatus(c *gin.Context) {
 		Status string `json:"status"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
@@ -144,30 +147,23 @@ func (h *Handler) SetStatus(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"organization": org}))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"organization": org}, requestID))
 }
 
 // AddMember adds a user to an organization.
-// POST /v1/organizations/:id/members
-func (h *Handler) AddMember(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		httpx.HandleError(c, httpx.InvalidParam("id", "must be a valid UUID"))
-		return
-	}
-
-	var req struct {
+var req struct {
 		UserID string `json:"user_id"`
 		Role   string `json:"role"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
 	userID, err := uuid.Parse(req.UserID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
+		httpx.HandleError(c, httpx.InvalidParam("user_id", "invalid user_id"))
 		return
 	}
 
@@ -176,7 +172,8 @@ func (h *Handler) AddMember(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"message": "member added"}))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"message": "member added"}, requestID))
 }
 
 // RemoveMember removes a user from an organization.
@@ -199,5 +196,6 @@ func (h *Handler) RemoveMember(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"message": "member removed"}, requestID))
 }
