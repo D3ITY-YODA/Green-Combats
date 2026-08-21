@@ -1,0 +1,41 @@
+paths:
+  /v1/context/today:
+    get:
+      summary: Get today's contextual update for the authenticated user
+      description: >-
+        Resolves the user's current place (from their primary saved place or
+        an explicit place_id) and returns today's generated content for that
+        place. If no content exists for the place, the response includes
+        place info with no update.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: place_id
+          in: query
+          required: false
+          description: Optional place UUID. If omitted, the user's primary saved place is used.
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Context response with place and optional today's update
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [success], default: success }
+                  data:
+                    type: object
+                    properties:
+                      place:
+                        $ref: '#/components/schemas/PlaceInfo'
+                      update:
+                        $ref: '#/components/schemas/Update'
+                    required: [place]
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'

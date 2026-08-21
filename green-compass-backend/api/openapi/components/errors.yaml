@@ -1,0 +1,55 @@
+components:
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Envelope'
+          examples:
+            missing_param:
+              summary: Missing required parameter
+              value:
+                status: error
+                data: null
+                meta: { timestamp: '2024-01-01T00:00:00Z' }
+                error:
+                  code: missing_parameter
+                  message: missing required parameter
+                  details: { parameter: place_id }
+            invalid_param:
+              summary: Invalid parameter value
+              value:
+                status: error
+                data: null
+                meta: { timestamp: '2024-01-01T00:00:00Z' }
+                error:
+                  code: invalid_parameter
+                  message: invalid parameter value
+                  details: { parameter: place_id, reason: "must be a valid UUID" }
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Envelope'
+          example:
+            status: error
+            data: null
+            meta: { timestamp: '2024-01-01T00:00:00Z' }
+            error:
+              code: unauthorized
+              message: authentication required
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Envelope'
+          example:
+            status: error
+            data: null
+            meta: { timestamp: '2024-01-01T00:00:00Z' }
+            error:
+              code: not_found
+              message: resource not found
