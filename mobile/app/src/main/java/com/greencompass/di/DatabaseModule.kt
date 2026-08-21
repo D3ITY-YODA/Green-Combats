@@ -3,6 +3,8 @@ package com.greencompass.di
 import android.content.Context
 import androidx.room.Room
 import com.greencompass.data.local.GreenCompassDatabase
+import com.greencompass.data.local.dao.ReportDao
+import com.greencompass.data.local.dao.UpdateDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,10 +23,10 @@ object DatabaseModule {
             context,
             GreenCompassDatabase::class.java,
             "green_compass_db"
-        ).build()
+        ).fallbackToDestructiveMigration() // Added for version bump
+        .build()
     }
 
-    @Provides
-    @Singleton
-    fun provideUpdateDao(database: GreenCompassDatabase) = database.updateDao()
+    @Provides @Singleton fun provideUpdateDao(database: GreenCompassDatabase) = database.updateDao()
+    @Provides @Singleton fun provideReportDao(database: GreenCompassDatabase) = database.reportDao()
 }

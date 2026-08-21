@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface AppRoute {
-    // Onboarding
     @Serializable data object Welcome : AppRoute
     @Serializable data object LanguageSelection : AppRoute
     @Serializable data object AccountChoice : AppRoute
@@ -12,10 +11,14 @@ sealed interface AppRoute {
     @Serializable data object Interests : AppRoute
     @Serializable data object SetupComplete : AppRoute
 
-    // Main App
     @Serializable data object Today : AppRoute
     @Serializable data object Explore : AppRoute
     @Serializable data object Updates : AppRoute
     @Serializable data object Report : AppRoute
     @Serializable data object Profile : AppRoute
+
+    @Serializable data class ReportForm(val reportType: String) : AppRoute
+    @Serializable data object ReportSuccess : AppRoute
+    @Serializable data object UpdateDetail : AppRoute
+    @Serializable data object SavedPlaces : AppRoute
 }

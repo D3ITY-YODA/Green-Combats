@@ -1,5 +1,6 @@
 package com.greencompass.feature.reports
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,7 +24,7 @@ import com.greencompass.core.ui.GreenCompassColors
 data class ReportOption(val title: String, val subtitle: String, val icon: ImageVector)
 
 @Composable
-fun ReportScreen() {
+fun ReportScreen(onSelectType: (String) -> Unit) {
     val options = listOf(
         ReportOption("Weather", "Rain, heat, wind", Icons.Outlined.Thermostat),
         ReportOption("Water", "Rivers, lakes, wells", Icons.Outlined.WaterDrop),
@@ -37,25 +38,28 @@ fun ReportScreen() {
             Text(text = "Share what you are seeing in your area.", fontSize = 15.sp, color = GreenCompassColors.MutedText, modifier = Modifier.padding(bottom = 24.dp))
             
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(options) { option -> ReportOptionCard(option) }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ReportOptionCard(option: ReportOption) {
-    Card(
-        shape = RoundedCornerShape(12.dp), 
-        colors = CardDefaults.cardColors(containerColor = Color.White), 
-        border = androidx.compose.foundation.BorderStroke(1.dp, GreenCompassColors.Stone)
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(option.icon, contentDescription = null, tint = GreenCompassColors.ForestGreen, modifier = Modifier.size(32.dp))
-            Spacer(Modifier.width(16.dp))
-            Column {
-                Text(text = option.title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = GreenCompassColors.Charcoal)
-                Text(text = option.subtitle, fontSize = 13.sp, color = GreenCompassColors.MutedText)
+                items(options) { option -> 
+                    Card(
+                        shape = RoundedCornerShape(12.dp), 
+                        colors = CardDefaults.cardColors(containerColor = Color.White), 
+                        border = androidx.compose.foundation.BorderStroke(1.dp, GreenCompassColors.Stone)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .clickable { onSelectType(option.title) },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(option.icon, contentDescription = null, tint = GreenCompassColors.ForestGreen, modifier = Modifier.size(32.dp))
+                            Spacer(Modifier.width(16.dp))
+                            Column {
+                                Text(text = option.title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = GreenCompassColors.Charcoal)
+                                Text(text = option.subtitle, fontSize = 13.sp, color = GreenCompassColors.MutedText)
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.greencompass.di
 
+import com.greencompass.data.repository.DefaultReportsRepository
 import com.greencompass.data.repository.DefaultTodayRepository
+import com.greencompass.data.repository.ReportsRepository
 import com.greencompass.data.repository.TodayRepository
 import dagger.Binds
 import dagger.Module
@@ -11,10 +13,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-
-    @Binds
-    @Singleton
-    abstract fun bindTodayRepository(
-        impl: DefaultTodayRepository
-    ): TodayRepository
+    @Binds @Singleton abstract fun bindTodayRepository(impl: DefaultTodayRepository): TodayRepository
+    @Binds @Singleton abstract fun bindReportsRepository(impl: DefaultReportsRepository): ReportsRepository
 }
