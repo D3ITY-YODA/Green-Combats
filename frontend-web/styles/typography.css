@@ -1,0 +1,88 @@
+/* styles/typography.css */
+
+@layer base {
+  :root {
+    /* 
+      Font Family Variables 
+      Using a robust system font stack for maximum performance (zero network requests).
+      If you prefer a custom font like Inter, use next/font/google in your layout.tsx 
+      and replace the --font-sans variable with the CSS variable it generates.
+    */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  }
+
+  /* Global HTML & Body Styles */
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Accessibility: Respect user preference for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-charcoal);
+    background-color: var(--color-warm-white);
+    line-height: 1.5;
+  }
+
+  /* Semantic Heading Defaults */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-charcoal);
+    letter-spacing: -0.02em; /* Slight tightening for a modern, clean look */
+  }
+
+  h1 { font-size: 1.875rem; /* 30px */ }
+  h2 { font-size: 1.5rem;   /* 24px */ }
+  h3 { font-size: 1.25rem;  /* 20px */ }
+  h4 { font-size: 1.125rem; /* 18px */ }
+  h5 { font-size: 1rem;     /* 16px */ }
+  h6 { font-size: 0.875rem; /* 14px */ }
+
+  /* Accessible Link Styles */
+  a {
+    color: var(--color-forest);
+    text-decoration: underline;
+    text-underline-offset: 4px; /* Prevents underline from striking through descenders */
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--color-sage);
+  }
+
+  /* High-visibility focus states for keyboard navigation */
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--color-forest);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Form Elements Base */
+  input, 
+  textarea, 
+  select, 
+  button {
+    font-family: inherit;
+    font-size: 1rem; /* Prevents iOS zoom on focus */
+    line-height: 1.5;
+  }
+
+  /* Ensure textareas are resizable vertically by default */
+  textarea {
+    resize: vertical;
+    min-height: 4rem;
+  }
+}

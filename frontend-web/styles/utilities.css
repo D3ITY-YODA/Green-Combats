@@ -1,0 +1,100 @@
+/* styles/utilities.css */
+
+@layer utilities {
+  /* --- Mobile Safe Areas --- */
+  /* Used in PublicNavigation to avoid overlap with iOS home indicator */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 1rem);
+  }
+
+  /* --- Custom Scrollbars --- */
+  /* Keeps the console sidebar and long lists looking clean */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-stone) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-stone);
+    border-radius: 20px;
+  }
+
+  /* Hide scrollbar for clean horizontal scrolling (e.g., topic chips) */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* --- Text Utilities --- */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* --- Map Fallback Utilities --- */
+  /* Used when MapLibre fails to load or is disabled */
+  .map-fallback-pattern {
+    background-color: var(--color-mist);
+    background-image: radial-gradient(var(--color-stone) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
+
+@layer components {
+  /* --- Reusable Card Styles --- */
+  /* Base card style used across Today, Explore, and Console */
+  .gc-card {
+    @apply rounded-2xl border border-stone bg-white p-6 shadow-sm;
+  }
+
+  .gc-card-interactive {
+    @apply gc-card transition-all duration-200 hover:border-sage hover:shadow-md focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  }
+
+  /* --- Button Variants --- */
+  /* Primary Action Button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-forest px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-forest/90 focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Secondary / Ghost Button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-stone bg-white px-5 py-3 text-sm font-semibold text-charcoal transition-colors hover:bg-stone/50 focus:outline-none focus:ring-2 focus:ring-stone focus:ring-offset-2;
+  }
+
+  /* --- Status Badges --- */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-important {
+    @apply badge bg-important/10 text-important;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning/10 text-warning;
+  }
+
+  .badge-success {
+    @apply badge bg-forest/10 text-forest;
+  }
+}
