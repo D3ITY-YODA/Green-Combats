@@ -34,4 +34,14 @@ sealed interface AppRoute {
     @Serializable data object LandEcosystems : AppRoute
     @Serializable data object FoodAgriculture : AppRoute
     @Serializable data object CommunityUpdates : AppRoute
+    
+    // Updates & Reports
+    @Serializable data object Updates : AppRoute
+    @Serializable data class UpdateDetail(val updateId: String) : AppRoute
+    @Serializable data object UpdateAcknowledgement : AppRoute
+    @Serializable data object Report : AppRoute
+    @Serializable data class ReportTypeSelection(val reportType: String) : AppRoute
+    @Serializable data class ReportForm(val reportType: String) : AppRoute
+    @Serializable data object ReportSubmitted : AppRoute
+    @Serializable data object ReportStatus : AppRoute
 }

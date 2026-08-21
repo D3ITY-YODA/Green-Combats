@@ -1,5 +1,6 @@
 package com.greencompass.feature.updates
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,9 +16,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.greencompass.core.ui.*
 import com.greencompass.domain.model.TodayData
 import com.greencompass.feature.today.TodayViewModel
+import com.greencompass.navigation.AppRoute
 
 @Composable
-fun UpdatesScreen(viewModel: TodayViewModel = hiltViewModel()) {
+fun UpdatesScreen(
+    viewModel: TodayViewModel = hiltViewModel(),
+    onNavigate: (AppRoute) -> Unit
+) {
     val state by viewModel.uiState.collectAsState()
     
     GreenCompassScaffold(
@@ -32,14 +37,14 @@ fun UpdatesScreen(viewModel: TodayViewModel = hiltViewModel()) {
         } else {
             val currentData = state.data
             if (currentData != null) {
-                UpdatesContent(data = currentData, modifier = Modifier.padding(paddingValues))
+                UpdatesContent(data = currentData, modifier = Modifier.padding(paddingValues), onNavigate = onNavigate)
             }
         }
     }
 }
 
 @Composable
-private fun UpdatesContent(data: TodayData, modifier: Modifier = Modifier) {
+private fun UpdatesContent(data: TodayData, modifier: Modifier = Modifier, onNavigate: (AppRoute) -> Unit) {
     LazyColumn(
         modifier = modifier.fillMaxSize().padding(AppSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(AppSpacing.md)
@@ -60,27 +65,32 @@ private fun UpdatesContent(data: TodayData, modifier: Modifier = Modifier) {
                 item {
                     Text(text = "Important updates", style = GreenCompassTypography.titleLarge, color = GreenCompassColors.Charcoal, modifier = Modifier.padding(bottom = AppSpacing.sm))
                 }
-                items(important) { update -> UpdateCard(update = update) }
+                items(important) { update -> 
+                    UpdateCard(update = update, onClick = { onNavigate(AppRoute.UpdateDetail(update.id)) }) 
+                }
             }
 
             if (other.isNotEmpty()) {
                 item {
                     Text(text = "Other updates", style = GreenCompassTypography.titleLarge, color = GreenCompassColors.Charcoal, modifier = Modifier.padding(top = AppSpacing.md, bottom = AppSpacing.sm))
                 }
-                items(other) { update -> UpdateCard(update = update) }
+                items(other) { update -> 
+                    UpdateCard(update = update, onClick = { onNavigate(AppRoute.UpdateDetail(update.id)) }) 
+                }
             }
         }
     }
 }
 
 @Composable
-private fun UpdateCard(update: com.greencompass.domain.model.PublicUpdate) {
+private fun UpdateCard(update: com.greencompass.domain.model.PublicUpdate, onClick: () -> Unit) {
     Card(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, GreenCompassColors.Stone)
     ) {
-        Column(modifier = Modifier.padding(AppSpacing.lg)) {
+        Column(modifier = Modifier.padding(AppSpacing.lg).fillMaxWidth()) {
             Text(text = update.title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal)
             Spacer(Modifier.height(AppSpacing.xs))
             Text(text = update.message, style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText)
