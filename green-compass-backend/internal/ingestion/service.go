@@ -27,7 +27,7 @@ type RunRepository interface {
 }
 
 type NormalizationService interface {
-	NormalizeAll(ctx context.Context, sourceCode string, records []RawRecord) ([]normalization.CanonicalObservation, error)
+	NormalizeAll(ctx context.Context, sourceCode string, records []normalization.RawInput) ([]normalization.CanonicalObservation, error)
 }
 
 type NormalizationRepository interface {
@@ -149,7 +149,19 @@ func (s *Service) Ingest(ctx context.Context, req IngestRequest) (*RunResult, er
 
 	// Normalize and store normalized observations
 	if len(rawRecords) > 0 && s.normService != nil && s.normRepo != nil {
-		normalized, err := s.normService.NormalizeAll(ctx, req.Source.Code, rawRecords)
+		inputs := make([]normalization.RawInput, 0, len(rawRecords))
+		for _, rec := range rawRecords {
+			inputs = append(inputs, normalization.RawInput{
+				ID:               rec.ID,
+				SourceID:         rec.SourceID,
+				PlaceID:          rec.PlaceID,
+				Payload:          rec.Payload,
+				SourceObservedAt: rec.SourceObservedAt,
+				FetchedAt:        rec.FetchedAt,
+				SourceURL:        rec.SourceURL,
+			})
+		}
+		normalized, err := s.normService.NormalizeAll(ctx, req.Source.Code, inputs)
 		if err != nil {
 			s.normService = nil // Disable normalization for subsequent runs if it fails
 		} else if len(normalized) > 0 {
