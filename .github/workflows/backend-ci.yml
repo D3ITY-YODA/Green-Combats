@@ -4,11 +4,12 @@ on:
   pull_request:
     paths:
       - 'green-compass-backend/**'
-      - '.github/workflows/backend-ci.yml'
+      - 'development/**'
   push:
-    branches: [main, develop, backend]
+    branches: [main, development, backend]
     paths:
       - 'green-compass-backend/**'
+      - 'development/**'
 
 defaults:
   run:
