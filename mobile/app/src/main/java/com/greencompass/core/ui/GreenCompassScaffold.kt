@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +30,8 @@ fun GreenCompassScaffold(
                 actions = actions
             )
         },
-        containerColor = GreenCompassColors.WarmWhite
+        containerColor = Color.White,
+        contentColor = GreenCompassColors.Charcoal
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             content(paddingValues)
@@ -50,7 +52,11 @@ fun GreenCompassTopBar(
     TopAppBar(
         title = {
             Column {
-                Text(text = title, style = GreenCompassTypography.titleMedium)
+                Text(
+                    text = title, 
+                    style = GreenCompassTypography.titleMedium.copy(fontWeight = FontWeight.SemiBold), 
+                    color = GreenCompassColors.Charcoal
+                )
                 if (showPlaceSwitcher && placeName != null) {
                     PlaceSwitcher(placeName = placeName, onClick = onPlaceClick ?: {})
                 }
@@ -59,9 +65,10 @@ fun GreenCompassTopBar(
         navigationIcon = { navigationIcon?.invoke() },
         actions = { actions?.invoke() },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = GreenCompassColors.WarmWhite,
+            containerColor = Color.White,
             titleContentColor = GreenCompassColors.Charcoal,
-            navigationIconContentColor = GreenCompassColors.Charcoal
+            navigationIconContentColor = GreenCompassColors.Charcoal,
+            actionIconContentColor = GreenCompassColors.Charcoal
         )
     )
 }

@@ -7,8 +7,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.greencompass.core.ui.*
+import com.greencompass.domain.model.ExploreSection
 import com.greencompass.domain.model.StatusType
 import com.greencompass.domain.model.TodayData
 
@@ -44,8 +50,6 @@ fun TodayScreen(state: TodayUiState, onRetry: () -> Unit) {
                     LoadingSkeleton(modifier = Modifier.fillMaxWidth().height(120.dp))
                     Spacer(Modifier.height(AppSpacing.md))
                     LoadingSkeleton(modifier = Modifier.fillMaxWidth().height(80.dp))
-                    Spacer(Modifier.height(AppSpacing.md))
-                    LoadingSkeleton(modifier = Modifier.fillMaxWidth().height(80.dp))
                 }
             } else if (state.data != null) {
                 TodayContent(data = state.data, isOffline = state.isOffline, onRetry = onRetry)
@@ -60,7 +64,6 @@ private fun TodayContent(data: TodayData, isOffline: Boolean, onRetry: () -> Uni
         modifier = Modifier.fillMaxSize().padding(AppSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(AppSpacing.md)
     ) {
-        // Status Card based on state
         item {
             when (data.status.type) {
                 StatusType.DELAYED -> DelayedStateCard(status = data.status, onRetry = onRetry)
@@ -68,7 +71,6 @@ private fun TodayContent(data: TodayData, isOffline: Boolean, onRetry: () -> Uni
             }
         }
 
-        // Important Updates (if any)
         if (data.updates.isNotEmpty()) {
             items(data.updates) { update ->
                 ImportantUpdateCard(update = update)
@@ -77,14 +79,13 @@ private fun TodayContent(data: TodayData, isOffline: Boolean, onRetry: () -> Uni
                 item {
                     SecondaryButton(
                         text = "View all updates",
-                        onClick = { /* Navigate to Updates */ },
+                        onClick = { },
                         modifier = Modifier.padding(top = AppSpacing.xs)
                     )
                 }
             }
         }
 
-        // Explore Sections
         if (data.exploreSections.isNotEmpty()) {
             item {
                 Text(
@@ -99,7 +100,6 @@ private fun TodayContent(data: TodayData, isOffline: Boolean, onRetry: () -> Uni
             }
         }
         
-        // Bottom padding for navigation bar
         item {
             Spacer(modifier = Modifier.height(AppSpacing.xxxl))
         }
@@ -109,8 +109,8 @@ private fun TodayContent(data: TodayData, isOffline: Boolean, onRetry: () -> Uni
 @Composable
 private fun TodayStatusCard(status: com.greencompass.domain.model.TodayStatus) {
     val (icon, titleColor) = when (status.type) {
-        StatusType.IMPORTANT -> Icons.Outlined.Warning to GreenCompassColors.ImportantAmber
-        else -> Icons.Outlined.CheckCircle to GreenCompassColors.NormalGreen
+        StatusType.IMPORTANT -> Icons.Filled.Warning to GreenCompassColors.ImportantAmber
+        else -> Icons.Filled.CheckCircle to GreenCompassColors.NormalGreen
     }
 
     Card(
@@ -138,17 +138,13 @@ private fun DelayedStateCard(status: com.greencompass.domain.model.TodayStatus, 
         border = androidx.compose.foundation.BorderStroke(1.dp, GreenCompassColors.Stone)
     ) {
         Column(modifier = Modifier.padding(AppSpacing.lg), horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(imageVector = Icons.Outlined.Warning, contentDescription = null, tint = GreenCompassColors.DelayedGrey, modifier = Modifier.size(48.dp))
+            Icon(imageVector = Icons.Filled.Warning, contentDescription = null, tint = GreenCompassColors.DelayedGrey, modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(AppSpacing.md))
             Text(text = "Information delayed", style = GreenCompassTypography.headlineMedium, color = GreenCompassColors.Charcoal, textAlign = TextAlign.Center)
             Spacer(Modifier.height(AppSpacing.sm))
             Text(text = "The latest update for Lower Valley\nis not available yet.", style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(AppSpacing.sm))
-            Text(text = "Last reliable update: ${status.updatedAt}", style = GreenCompassTypography.labelMedium, color = GreenCompassColors.DelayedGrey)
             Spacer(Modifier.height(AppSpacing.lg))
-            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
-                SecondaryButton(text = "Try again", onClick = onRetry, modifier = Modifier.weight(1f).height(AppSpacing.huge))
-            }
+            SecondaryButton(text = "Try again", onClick = onRetry, modifier = Modifier.height(AppSpacing.huge))
         }
     }
 }
@@ -162,7 +158,8 @@ private fun ImportantUpdateCard(update: com.greencompass.domain.model.PublicUpda
     ) {
         Column(modifier = Modifier.padding(AppSpacing.lg)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(8.dp).padding(end = AppSpacing.xs).background(GreenCompassColors.ImportantAmber, shape = CircleShape))
+                Box(modifier = Modifier.size(8.dp).background(GreenCompassColors.ImportantAmber, shape = CircleShape))
+                Spacer(Modifier.width(AppSpacing.xs))
                 Text(text = update.title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal)
             }
             Spacer(Modifier.height(AppSpacing.xs))
@@ -170,22 +167,50 @@ private fun ImportantUpdateCard(update: com.greencompass.domain.model.PublicUpda
             Spacer(Modifier.height(AppSpacing.sm))
             Text(text = "${update.placeName} · Updated ${update.updatedAt}", style = GreenCompassTypography.labelSmall, color = GreenCompassColors.MutedText)
             Spacer(Modifier.height(AppSpacing.sm))
-            TextLinkButton(text = "Read update", onClick = { /* Navigate to detail */ })
+            TextLinkButton(text = "Read update", onClick = { })
         }
     }
 }
 
+// Map section keys to high-contrast Core icons
+private fun getIconForSection(key: String) = when (key) {
+    "local" -> Icons.Filled.Info
+    "seasonal" -> Icons.Filled.DateRange
+    "water" -> Icons.Filled.Place
+    "land" -> Icons.Filled.Place
+    "food" -> Icons.Filled.Star
+    "community" -> Icons.Filled.Person
+    else -> Icons.Filled.Info
+}
+
 @Composable
-private fun ExploreCard(section: com.greencompass.domain.model.ExploreSection) {
+private fun ExploreCard(section: ExploreSection) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, GreenCompassColors.Stone)
     ) {
-        Column(modifier = Modifier.padding(AppSpacing.lg)) {
-            Text(text = section.title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal)
-            Spacer(Modifier.height(AppSpacing.xs))
-            Text(text = section.description, style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText)
+        Row(modifier = Modifier.padding(AppSpacing.lg).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            // High contrast background for the icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(GreenCompassColors.SoftSage, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = getIconForSection(section.key),
+                    contentDescription = null,
+                    tint = GreenCompassColors.ForestGreen, // Dark green on light green = PERFECT CONTRAST
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(Modifier.width(AppSpacing.md))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = section.title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal)
+                Spacer(Modifier.height(AppSpacing.xxs))
+                Text(text = section.description, style = GreenCompassTypography.bodySmall, color = GreenCompassColors.MutedText)
+            }
         }
     }
 }

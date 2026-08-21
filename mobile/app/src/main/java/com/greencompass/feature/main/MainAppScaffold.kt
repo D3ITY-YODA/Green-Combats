@@ -2,8 +2,11 @@ package com.greencompass.feature.main
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -13,17 +16,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.greencompass.core.ui.*
+import com.greencompass.core.ui.GreenCompassColors
+import com.greencompass.core.ui.GreenCompassTypography
 import com.greencompass.navigation.AppRoute
 
-data class BottomNavItem(val route: AppRoute, val label: String, val selectedIcon: ImageVector, val unselectedIcon: ImageVector)
+data class BottomNavItem(val route: AppRoute, val label: String, val icon: ImageVector)
 
 val bottomNavItems = listOf(
-    BottomNavItem(AppRoute.Today, "Today", Icons.Filled.WbSunny, Icons.Outlined.WbSunny),
-    BottomNavItem(AppRoute.Explore, "Explore", Icons.Filled.Explore, Icons.Outlined.Explore),
-    BottomNavItem(AppRoute.Updates, "Updates", Icons.Filled.Notifications, Icons.Outlined.Notifications),
-    BottomNavItem(AppRoute.Report, "Report", Icons.Filled.EditNote, Icons.Outlined.EditNote),
-    BottomNavItem(AppRoute.Profile, "Profile", Icons.Filled.Person, Icons.Outlined.Person)
+    BottomNavItem(AppRoute.Today, "Today", Icons.Filled.Home),
+    BottomNavItem(AppRoute.Explore, "Explore", Icons.Filled.Search),
+    BottomNavItem(AppRoute.Updates, "Updates", Icons.Filled.Notifications),
+    BottomNavItem(AppRoute.Report, "Report", Icons.Filled.Edit),
+    BottomNavItem(AppRoute.Profile, "Profile", Icons.Filled.Person)
 )
 
 @Composable
@@ -32,56 +36,65 @@ fun MainAppScaffold(
     content: @Composable () -> Unit
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRouteName = navBackStackEntry?.destination?.route?.substringBefore("?") ?: ""
+    // Get the fully qualified route name (e.g., "com.greencompass.navigation.AppRoute.Today")
+    val currentRoute = navBackStackEntry?.destination?.route ?: ""
     
-    // Only show bottom nav if we are on one of the main tab routes
-    val showBottomNav = bottomNavItems.any { it.route::class.simpleName == currentRouteName }
+    // Check if the current route matches the qualified name of any bottom nav item
+    val showBottomNav = bottomNavItems.any { item -> 
+        currentRoute == item.route::class.qualifiedName 
+    }
 
     Scaffold(
         bottomBar = {
             if (showBottomNav) {
-                Column {
-                    // Top border: Stone (as per brief)
-                    androidx.compose.material3.Divider(color = GreenCompassColors.Stone, thickness = 1.dp)
-                    NavigationBar(
-                        containerColor = Color.White,
-                        tonalElevation = 0.dp,
-                        contentColor = GreenCompassColors.Charcoal
-                    ) {
-                        bottomNavItems.forEach { item ->
-                            val selected = currentRouteName == item.route::class.simpleName
-                            NavigationBarItem(
-                                icon = {
-                                    Icon(
-                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                        contentDescription = item.label
-                                    )
-                                },
-                                label = { Text(text = item.label, style = GreenCompassTypography.labelMedium) },
-                                selected = selected,
-                                onClick = {
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
+                NavigationBar(
+                    containerColor = Color.White,
+                    contentColor = GreenCompassColors.Charcoal,
+                    tonalElevation = 0.dp
+                ) {
+                    bottomNavItems.forEach { item ->
+                        // Check if this specific item is the active one
+                        val selected = currentRoute == item.route::class.qualifiedName
+                        
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
                                     }
-                                },
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = GreenCompassColors.ForestGreen,
-                                    selectedTextColor = GreenCompassColors.ForestGreen,
-                                    unselectedIconColor = GreenCompassColors.MutedText,
-                                    unselectedTextColor = GreenCompassColors.MutedText,
-                                    indicatorColor = Color.Transparent
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.label,
+                                    tint = if (selected) GreenCompassColors.ForestGreen else GreenCompassColors.MutedText
                                 )
+                            },
+                            label = {
+                                Text(
+                                    text = item.label,
+                                    style = GreenCompassTypography.labelMedium,
+                                    color = if (selected) GreenCompassColors.ForestGreen else GreenCompassColors.MutedText
+                                )
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = GreenCompassColors.ForestGreen,
+                                unselectedIconColor = GreenCompassColors.MutedText,
+                                selectedTextColor = GreenCompassColors.ForestGreen,
+                                unselectedTextColor = GreenCompassColors.MutedText,
+                                indicatorColor = GreenCompassColors.SoftSage
                             )
-                        }
+                        )
                     }
                 }
             }
         },
-        containerColor = GreenCompassColors.WarmWhite
+        containerColor = Color.White,
+        contentColor = GreenCompassColors.Charcoal
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             content()
