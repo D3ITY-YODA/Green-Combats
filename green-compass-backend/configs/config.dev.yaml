@@ -1,0 +1,27 @@
+app_env: dev
+
+server:
+  host: ""
+  port: 8080
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 120s
+  shutdown_timeout: 15s
+
+logging:
+  level: info
+  format: json
+
+database:
+  url: ""
+  max_conns: 10
+  min_conns: 0
+  conn_max_lifetime: 30m
+  conn_max_idle_time: 5m
+  health_check_period: 1m
+
+auth:
+  secret: ""
+  access_token_ttl: 15m
+  refresh_token_ttl: 720h
+  issuer: green-compass

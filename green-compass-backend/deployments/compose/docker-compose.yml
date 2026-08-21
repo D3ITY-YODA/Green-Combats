@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgis/postgis:17-3.5
+    container_name: greencompass-postgres
+    environment:
+      POSTGRES_USER: greencompass
+      POSTGRES_PASSWORD: greencompass
+      POSTGRES_DB: greencompass
+    ports:
+      - "${GC_DEV_PG_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greencompass -d greencompass"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  pgdata:

@@ -1,0 +1,139 @@
+components:
+  schemas:
+    PlaceInfo:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        place_type: { type: string, enum: [community, ward, district, custom] }
+        lat: { type: number, format: double }
+        lon: { type: number, format: double }
+        label: { type: string, nullable: true }
+        is_primary: { type: boolean, default: false }
+      required: [id, name, place_type, lat, lon]
+
+    Update:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        place_id: { type: string, format: uuid }
+        place_name: { type: string }
+        content_type: { type: string, enum: [today, forecast, alert] }
+        headline: { type: string }
+        body_text: { type: string }
+        call_to_action: { type: string, nullable: true }
+        indicators:
+          type: array
+          items:
+            $ref: '#/components/schemas/Indicator'
+        generated_at: { type: string, format: date-time }
+        period_start: { type: string, format: date-time }
+        period_end: { type: string, format: date-time }
+      required: [id, place_id, place_name, content_type, headline, body_text, generated_at, period_start, period_end]
+
+    Indicator:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        display_name: { type: string }
+        value: { type: number, format: double }
+        unit: { type: string }
+        trend: { type: string, nullable: true, enum: [increasing, stable, decreasing] }
+        relevance_score: { type: number, format: double }
+      required: [id, code, display_name, value, unit, relevance_score]
+
+    ExploreIndicator:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        place_id: { type: string, format: uuid }
+        place_name: { type: string }
+        code: { type: string }
+        display_name: { type: string }
+        category: { type: string }
+        value: { type: number, format: double }
+        unit: { type: string }
+        trend: { type: string, nullable: true }
+        trend_confidence: { type: number, format: double, nullable: true }
+        computed_at: { type: string, format: date-time }
+      required: [id, place_id, place_name, code, display_name, category, value, unit, computed_at]
+
+    PaginationMeta:
+      type: object
+      properties:
+        page: { type: integer, minimum: 1 }
+        limit: { type: integer, minimum: 1 }
+        total: { type: integer, minimum: 0 }
+        has_next: { type: boolean }
+      required: [page, limit, total, has_next]
+
+    Meta:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+        timestamp: { type: string, format: date-time }
+      required: [timestamp]
+
+    Envelope:
+      type: object
+      properties:
+        status: { type: string, enum: [success, error], default: success }
+        data: {}
+        meta:
+          $ref: '#/components/schemas/Meta'
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+
+    ErrorDetail:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: {}
+      required: [code, message]
+
+    Observation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        reporter_id: { type: string, format: uuid }
+        place_id: { type: string, format: uuid, nullable: true }
+        lat: { type: number, format: double, nullable: true }
+        lon: { type: number, format: double, nullable: true }
+        category:
+          type: string
+          enum: [flood, drought, water_quality, crop_damage, air_quality, other]
+        description: { type: string }
+        photo_object_key: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [pending, verified, rejected, flagged]
+        verified_by: { type: string, format: uuid, nullable: true }
+        verified_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, reporter_id, category, description, status, created_at, updated_at]
+
+    Report:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        reporter_id: { type: string, format: uuid }
+        place_id: { type: string, format: uuid, nullable: true }
+        lat: { type: number, format: double, nullable: true }
+        lon: { type: number, format: double, nullable: true }
+        category:
+          type: string
+          enum: [flood, drought, water_quality, crop_damage, air_quality, other]
+        description: { type: string }
+        photo_object_key: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [pending, verified, rejected, flagged]
+        verified_by: { type: string, format: uuid, nullable: true }
+        verified_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, reporter_id, category, description, status, created_at, updated_at]

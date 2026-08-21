@@ -1,0 +1,88 @@
+paths:
+  /v1/places:
+    post:
+      summary: Create a place
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, place_type, lat, lon]
+              properties:
+                name: { type: string, maxLength: 200 }
+                place_type: { type: string, enum: [community, ward, district, custom] }
+                lat: { type: number, format: double }
+                lon: { type: number, format: double }
+      responses:
+        '201': { description: Created place }
+        '400': { description: Invalid place data }
+        '403': { description: Insufficient permission for official place types }
+  /v1/places/{id}:
+    get:
+      summary: Get a place
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Place }
+        '400': { description: Invalid place ID }
+        '404': { description: Place not found }
+    patch:
+      summary: Update a place
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, maxLength: 200 }
+                lat: { type: number, format: double }
+                lon: { type: number, format: double }
+      responses:
+        '200': { description: Updated place }
+        '400': { description: Invalid update }
+        '403': { description: Forbidden }
+        '404': { description: Place not found }
+  /v1/places/nearby:
+    get:
+      summary: Find nearby official places
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number, format: double } }
+        - { name: lon, in: query, required: true, schema: { type: number, format: double } }
+        - { name: radius_m, in: query, schema: { type: number, default: 10000, maximum: 50000 } }
+        - { name: limit, in: query, schema: { type: integer, default: 25, maximum: 100 } }
+      responses:
+        '200': { description: Official places ordered by proximity }
+        '400': { description: Invalid coordinates or search bounds }
+  /v1/me/places:
+    get:
+      summary: List the authenticated user's saved places
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Saved places, primary first } }
+  /v1/me/places/{place_id}:
+    put:
+      summary: Save a place or update its label
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: place_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '204': { description: Saved }
+        '404': { description: Place not found }
+        '409': { description: Saved-place limit reached }
+    delete:
+      summary: Remove a saved place
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: place_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '204': { description: Removed }
+        '404': { description: Saved place not found }
+  /v1/me/places/{place_id}/primary:
+    put:
+      summary: Set a saved place as primary
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: place_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '204': { description: Primary place changed }
+        '404': { description: Saved place not found }
