@@ -11,6 +11,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LocationOff
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -68,5 +71,37 @@ fun OfflineBanner(modifier: Modifier = Modifier) {
         Icon(imageVector = Icons.Outlined.CloudOff, contentDescription = null, tint = GreenCompassColors.MutedText, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(AppSpacing.sm))
         Text(text = "You're offline. Showing information saved on this device.", style = GreenCompassTypography.bodySmall, color = GreenCompassColors.MutedText)
+    }
+}
+
+@Composable
+fun PermissionDeniedStateView(
+    title: String = "Location permission is off",
+    message: String = "You can still choose a place manually.",
+    onChoosePlace: () -> Unit,
+    onOpenSettings: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(AppSpacing.xxl), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = Icons.Outlined.LocationOff, contentDescription = null, tint = GreenCompassColors.MutedText, modifier = Modifier.size(64.dp))
+        Spacer(modifier = Modifier.height(AppSpacing.md))
+        Text(text = title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(AppSpacing.xs))
+        Text(text = message, style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(AppSpacing.xl))
+        PrimaryButton(text = "Choose a place", onClick = onChoosePlace, modifier = Modifier.padding(bottom = AppSpacing.sm))
+        TextLinkButton(text = "Open settings", onClick = onOpenSettings)
+    }
+}
+
+@Composable
+fun SessionExpiredStateView(onSignIn: () -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth().padding(AppSpacing.xxl), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = Icons.Outlined.Lock, contentDescription = null, tint = GreenCompassColors.MutedText, modifier = Modifier.size(64.dp))
+        Spacer(modifier = Modifier.height(AppSpacing.md))
+        Text(text = "Your session has ended", style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(AppSpacing.xs))
+        Text(text = "Please sign in again to continue.", style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(AppSpacing.xl))
+        PrimaryButton(text = "Sign in", onClick = onSignIn, modifier = Modifier.width(200.dp))
     }
 }
