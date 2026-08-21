@@ -53,10 +53,20 @@ type Logging struct {
 	Format string `yaml:"format"`
 }
 
+type Database struct {
+	URL               string   `yaml:"url"`
+	MaxConns          int32    `yaml:"max_conns"`
+	MinConns          int32    `yaml:"min_conns"`
+	ConnMaxLifetime   Duration `yaml:"conn_max_lifetime"`
+	ConnMaxIdleTime   Duration `yaml:"conn_max_idle_time"`
+	HealthCheckPeriod Duration `yaml:"health_check_period"`
+}
+
 type Config struct {
-	AppEnv string  `yaml:"app_env"`
-	Server Server  `yaml:"server"`
-	Log    Logging `yaml:"logging"`
+	AppEnv   string   `yaml:"app_env"`
+	Server   Server   `yaml:"server"`
+	Log      Logging  `yaml:"logging"`
+	Database Database `yaml:"database"`
 }
 
 type LoadOptions struct {
@@ -107,6 +117,14 @@ func Defaults() *Config {
 			Level:  "info",
 			Format: "json",
 		},
+		Database: Database{
+			URL:               "",
+			MaxConns:          10,
+			MinConns:          0,
+			ConnMaxLifetime:   Duration(30 * time.Minute),
+			ConnMaxIdleTime:   Duration(5 * time.Minute),
+			HealthCheckPeriod: Duration(1 * time.Minute),
+		},
 	}
 }
 
@@ -139,6 +157,16 @@ func (c *Config) Validate() []error {
 	}
 	if _, err := logging.ParseFormat(c.Log.Format); err != nil {
 		errs = append(errs, fmt.Errorf("logging.format: %w", err))
+	}
+
+	if c.Database.MaxConns < 0 {
+		errs = append(errs, fmt.Errorf("database.max_conns: must not be negative, got %d", c.Database.MaxConns))
+	}
+	if c.Database.MinConns < 0 {
+		errs = append(errs, fmt.Errorf("database.min_conns: must not be negative, got %d", c.Database.MinConns))
+	}
+	if c.Database.MaxConns > 0 && c.Database.MinConns > c.Database.MaxConns {
+		errs = append(errs, fmt.Errorf("database.min_conns: %d exceeds max_conns %d", c.Database.MinConns, c.Database.MaxConns))
 	}
 
 	return errs
@@ -204,6 +232,42 @@ func applyEnvOverrides(cfg *Config, lookup func(string) (string, bool)) error {
 
 	applyString(&cfg.Log.Level, lookup, "GC_LOG_LEVEL")
 	applyString(&cfg.Log.Format, lookup, "GC_LOG_FORMAT")
+
+	applyString(&cfg.Database.URL, lookup, "GC_DATABASE_URL")
+
+	if v, ok := lookup("GC_DATABASE_MAX_CONNS"); ok && v != "" {
+		n, err := strconv.Atoi(v)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("env GC_DATABASE_MAX_CONNS: invalid integer %q", v))
+		} else {
+			cfg.Database.MaxConns = int32(n)
+		}
+	}
+	if v, ok := lookup("GC_DATABASE_MIN_CONNS"); ok && v != "" {
+		n, err := strconv.Atoi(v)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("env GC_DATABASE_MIN_CONNS: invalid integer %q", v))
+		} else {
+			cfg.Database.MinConns = int32(n)
+		}
+	}
+
+	for key, dst := range map[string]*Duration{
+		"GC_DATABASE_CONN_MAX_LIFETIME": &cfg.Database.ConnMaxLifetime,
+		"GC_DATABASE_IDLE_TIME":         &cfg.Database.ConnMaxIdleTime,
+		"GC_DATABASE_HEALTH_CHECK":      &cfg.Database.HealthCheckPeriod,
+	} {
+		v, ok := lookup(key)
+		if !ok || v == "" {
+			continue
+		}
+		d, err := time.ParseDuration(v)
+		if err != nil || d <= 0 {
+			errs = append(errs, fmt.Errorf("env %s: invalid duration %q", key, v))
+			continue
+		}
+		*dst = Duration(d)
+	}
 
 	return errors.Join(errs...)
 }

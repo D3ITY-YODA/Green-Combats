@@ -11,3 +11,11 @@ server:
 logging:
   level: info
   format: json
+
+database:
+  url: ""
+  max_conns: 10
+  min_conns: 0
+  conn_max_lifetime: 30m
+  conn_max_idle_time: 5m
+  health_check_period: 1m

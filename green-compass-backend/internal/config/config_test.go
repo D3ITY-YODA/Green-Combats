@@ -44,6 +44,15 @@ func TestDefaults_AreValid(t *testing.T) {
 	if cfg.Log.Level != "info" || cfg.Log.Format != "json" {
 		t.Errorf("Log = %+v, want level info format json", cfg.Log)
 	}
+	if cfg.Database.URL != "" {
+		t.Errorf("Database.URL = %q, want empty default", cfg.Database.URL)
+	}
+	if cfg.Database.MaxConns != 10 {
+		t.Errorf("Database.MaxConns = %d, want 10", cfg.Database.MaxConns)
+	}
+	if time.Duration(cfg.Database.ConnMaxLifetime) != 30*time.Minute {
+		t.Errorf("Database.ConnMaxLifetime = %s, want 30m", time.Duration(cfg.Database.ConnMaxLifetime))
+	}
 }
 
 func TestLoad_FromFile(t *testing.T) {
@@ -60,6 +69,13 @@ server:
 logging:
   level: debug
   format: text
+database:
+  url: postgres://user:pass@db:5432/app
+  max_conns: 25
+  min_conns: 2
+  conn_max_lifetime: 45m
+  conn_max_idle_time: 8m
+  health_check_period: 2m
 `)
 
 	cfg, err := config.Load(config.LoadOptions{Path: path})
@@ -82,6 +98,15 @@ logging:
 	if cfg.Log.Level != "debug" || cfg.Log.Format != "text" {
 		t.Errorf("Log = %+v, want level debug format text", cfg.Log)
 	}
+	if cfg.Database.URL != "postgres://user:pass@db:5432/app" {
+		t.Errorf("Database.URL = %q, want value from file", cfg.Database.URL)
+	}
+	if cfg.Database.MaxConns != 25 || cfg.Database.MinConns != 2 {
+		t.Errorf("Database pool sizes = %d/%d, want 25/2", cfg.Database.MaxConns, cfg.Database.MinConns)
+	}
+	if time.Duration(cfg.Database.ConnMaxIdleTime) != 8*time.Minute {
+		t.Errorf("Database.ConnMaxIdleTime = %s, want 8m", time.Duration(cfg.Database.ConnMaxIdleTime))
+	}
 }
 
 func TestLoad_EnvOverridesFile(t *testing.T) {
@@ -96,9 +121,12 @@ logging:
 `)
 
 	env := map[string]string{
-		"GC_SERVER_PORT": "9100",
-		"GC_LOG_LEVEL":   "debug",
-		"GC_APP_ENV":     "dev",
+		"GC_SERVER_PORT":                "9100",
+		"GC_LOG_LEVEL":                  "debug",
+		"GC_APP_ENV":                    "dev",
+		"GC_DATABASE_URL":               "postgres://env:env@db:5432/env",
+		"GC_DATABASE_MAX_CONNS":         "30",
+		"GC_DATABASE_CONN_MAX_LIFETIME": "1h",
 	}
 
 	cfg, err := config.Load(config.LoadOptions{Path: path, Lookup: lookupFrom(env)})
@@ -114,6 +142,15 @@ logging:
 	}
 	if cfg.AppEnv != config.EnvDev {
 		t.Errorf("AppEnv = %q, want env override dev", cfg.AppEnv)
+	}
+	if cfg.Database.URL != "postgres://env:env@db:5432/env" {
+		t.Errorf("Database.URL = %q, want env override", cfg.Database.URL)
+	}
+	if cfg.Database.MaxConns != 30 {
+		t.Errorf("Database.MaxConns = %d, want env override 30", cfg.Database.MaxConns)
+	}
+	if time.Duration(cfg.Database.ConnMaxLifetime) != time.Hour {
+		t.Errorf("Database.ConnMaxLifetime = %s, want env override 1h", time.Duration(cfg.Database.ConnMaxLifetime))
 	}
 }
 
@@ -256,6 +293,28 @@ func TestLoad_Errors(t *testing.T) {
 			env:     map[string]string{"GC_SERVER_IDLE_TIMEOUT": "soon"},
 			wantErr: "GC_SERVER_IDLE_TIMEOUT",
 		},
+		{
+			name:    "bad env database duration",
+			yaml:    "",
+			env:     map[string]string{"GC_DATABASE_IDLE_TIME": "soon"},
+			wantErr: "GC_DATABASE_IDLE_TIME",
+		},
+		{
+			name:    "negative env max conns",
+			yaml:    "",
+			env:     map[string]string{"GC_DATABASE_MAX_CONNS": "-3"},
+			wantErr: "database.max_conns",
+		},
+		{
+			name:    "min conns above max",
+			yaml:    "database:\n  max_conns: 5\n  min_conns: 9\n",
+			wantErr: "database.min_conns",
+		},
+		{
+			name:    "negative min conns in file",
+			yaml:    "database:\n  min_conns: -1\n",
+			wantErr: "database.min_conns",
+		},
 	}
 
 	for _, tt := range tests {
@@ -284,10 +343,14 @@ func TestValidate_AggregatesMultipleErrors(t *testing.T) {
 		AppEnv: "nope",
 		Server: config.Server{Port: -1},
 		Log:    config.Logging{Level: "loud", Format: "xml"},
+		Database: config.Database{
+			MaxConns: 4,
+			MinConns: 9,
+		},
 	}
 
 	errs := cfg.Validate()
-	if len(errs) < 4 {
-		t.Fatalf("Validate() returned %d errors, want at least 4: %v", len(errs), errs)
+	if len(errs) < 5 {
+		t.Fatalf("Validate() returned %d errors, want at least 5: %v", len(errs), errs)
 	}
 }
