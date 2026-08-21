@@ -1,76 +1,76 @@
 package httpx
 
 import (
-	"errors"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
-// AppError represents a standard application error
-type AppError struct {
-	Code       string
-	HTTPStatus int
-	Message    string
-	Details    map[string]interface{}
-}
-
-var (
-	ErrUnauthorized  = &AppError{Code: "unauthorized", HTTPStatus: http.StatusUnauthorized, Message: "authentication required"}
-	ErrForbidden     = &AppError{Code: "forbidden", HTTPStatus: http.StatusForbidden, Message: "access denied"}
-	ErrNotFound      = &AppError{Code: "not_found", HTTPStatus: http.StatusNotFound, Message: "resource not found"}
-	ErrBadRequest    = &AppError{Code: "bad_request", HTTPStatus: http.StatusBadRequest, Message: "invalid request"}
-	ErrConflict      = &AppError{Code: "conflict", HTTPStatus: http.StatusConflict, Message: "conflict with existing resource"}
-	ErrInternal      = &AppError{Code: "internal_error", HTTPStatus: http.StatusInternalServerError, Message: "internal server error"}
-)
-
-func (e *AppError) Error() string { return e.Message }
-
-// NotFound returns a 404 error with a custom message
-func NotFound(message string) *AppError {
-	return &AppError{
-		Code:       "not_found",
-		HTTPStatus: http.StatusNotFound,
-		Message:    message,
+// RequestIDMiddleware adds a unique request ID to each request
+func RequestIDMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		requestID := c.GetHeader("X-Request-ID")
+		if requestID == "" {
+			requestID = uuid.New().String()
+		}
+		c.Set("request_id", requestID)
+		c.Header("X-Request-ID", requestID)
+		c.Next()
 	}
 }
 
-// HandleError responds with a standardized error envelope
+// GetRequestID retrieves the request ID from context
+func GetRequestID(c *gin.Context) string {
+	if v, exists := c.Get("request_id"); exists {
+		if id, ok := v.(string); ok {
+			return id
+		}
+	}
+	return uuid.New().String()
+}
+
+// HandleError writes a standardized error response
 func HandleError(c *gin.Context, err error) {
 	var appErr *AppError
-
-	if errors.As(err, &appErr) {
-		c.JSON(appErr.HTTPStatus, ErrorWithDetails(appErr.Code, appErr.Message, appErr.Details))
-		return
+	if !errors.As(err, &appErr) {
+		appErr = &AppError{
+			Code:    "INTERNAL_ERROR",
+			Message: "internal server error",
+			Status:  http.StatusInternalServerError,
+		}
 	}
-
-	// Default to internal error for unknown error types
-	c.JSON(http.StatusInternalServerError, Error(ErrInternal.Code, ErrInternal.Message))
+	requestID := GetRequestID(c)
+	c.JSON(appErr.Status, Error(appErr.Code, appErr.Message, requestID))
 }
 
-// MissingParam returns an error for missing query/form parameter
-func MissingParam(param string) *AppError {
-	err := &AppError{
-		Code:       "missing_parameter",
-		HTTPStatus: http.StatusBadRequest,
-		Message:    "missing required parameter",
-		Details:    make(map[string]interface{}),
-	}
-	err.Details["parameter"] = param
-	return err
+// AppError represents an application error with HTTP status
+type AppError struct {
+	Code    string
+	Message string
+	Status  int
+	Details map[string]interface{}
 }
 
-// InvalidParam returns an error for invalid parameter value
+func (e *AppError) Error() string {
+	return e.Message
+}
+
+// Error constructors
+var (
+	ErrUnauthorized = &AppError{Code: "UNAUTHORIZED", Message: "unauthorized", Status: http.StatusUnauthorized}
+	ErrForbidden    = &AppError{Code: "FORBIDDEN", Message: "forbidden", Status: http.StatusForbidden}
+	ErrNotFound     = &AppError{Code: "NOT_FOUND", Message: "resource not found", Status: http.StatusNotFound}
+	ErrBadRequest   = &AppError{Code: "BAD_REQUEST", Message: "bad request", Status: http.StatusBadRequest}
+	ErrInternal     = &AppError{Code: "INTERNAL_ERROR", Message: "internal server error", Status: http.StatusInternalServerError}
+	ErrConflict     = &AppError{Code: "CONFLICT", Message: "resource conflict", Status: http.StatusConflict}
+	ErrTooManyRequests = &AppError{Code: "RATE_LIMITED", Message: "too many requests", Status: http.StatusTooManyRequests}
+)
+
 func InvalidParam(param, reason string) *AppError {
-	err := &AppError{
-		Code:       "invalid_parameter",
-		HTTPStatus: http.StatusBadRequest,
-		Message:    "invalid parameter value",
-		Details:    make(map[string]interface{}),
+	return &AppError{
+		Code:    "INVALID_PARAMETER",
+		Message: param + ": " + reason,
+		Status:  http.StatusBadRequest,
+		Details: map[string]interface{}{"parameter": param, "reason": reason},
 	}
-	err.Details["parameter"] = param
-	if reason != "" {
-		err.Details["reason"] = reason
-	}
-	return err
 }

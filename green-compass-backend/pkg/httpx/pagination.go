@@ -6,45 +6,45 @@ import (
 
 // PaginationParams holds request pagination parameters
 type PaginationParams struct {
-	Page  int
-	Limit int
+	Page     int
+	PageSize int
 }
 
 // ValidatePagination ensures pagination parameters are within bounds
-func ValidatePagination(page, limit int) PaginationParams {
+func ValidatePagination(page, pageSize int) PaginationParams {
 	const (
-		minLimit = 1
-		maxLimit = 100
-		minPage  = 1
+		minPageSize = 1
+		maxPageSize = 100
+		minPage     = 1
 	)
 
 	if page < minPage {
 		page = minPage
 	}
-	if limit < minLimit {
-		limit = 20 // default
+	if pageSize < minPageSize {
+		pageSize = 20 // default
 	}
-	if limit > maxLimit {
-		limit = maxLimit
+	if pageSize > maxPageSize {
+		pageSize = maxPageSize
 	}
 
 	return PaginationParams{
-		Page:  page,
-		Limit: limit,
+		Page:     page,
+		PageSize: pageSize,
 	}
 }
 
 // CalculatePaginationMeta computes pagination metadata
-func CalculatePaginationMeta(page, limit, total int) *PaginationMeta {
+func CalculatePaginationMeta(page, pageSize, total int) *PaginationMeta {
 	return &PaginationMeta{
-		Page:    page,
-		Limit:   limit,
-		Total:   total,
-		HasNext: page < int(math.Ceil(float64(total)/float64(limit))),
+		Page:     page,
+		PageSize: pageSize,
+		Total:    total,
+		NextCursor: "",
 	}
 }
 
 // CalculateOffset computes database OFFSET for a page
-func CalculateOffset(page, limit int) int {
-	return (page - 1) * limit
+func CalculateOffset(page, pageSize int) int {
+	return (page - 1) * pageSize
 }
