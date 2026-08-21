@@ -165,7 +165,7 @@ func TestUpDownCycle_Integration(t *testing.T) {
 	if st.Current != 0 {
 		t.Fatalf("Current = %d after reset, want 0", st.Current)
 	}
-	if len(st.Pending) != 6 {
+	if len(st.Pending) != 7 {
 		t.Fatalf("Pending = %v, want 6 versions", st.Pending)
 	}
 
@@ -173,7 +173,7 @@ func TestUpDownCycle_Integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Up(all) unexpected error: %v", err)
 	}
-	if len(applied) != 6 {
+	if len(applied) != 7 {
 		t.Fatalf("applied = %v, want 6 versions", applied)
 	}
 
@@ -181,7 +181,7 @@ func TestUpDownCycle_Integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Status() unexpected error: %v", err)
 	}
-	if st.Current != 6 || len(st.Pending) != 0 {
+	if st.Current != 7 || len(st.Pending) != 0 {
 		t.Fatalf("status after up-all = current %d pending %v, want current 6 pending empty", st.Current, st.Pending)
 	}
 
@@ -204,7 +204,7 @@ func TestUpDownCycle_Integration(t *testing.T) {
 		t.Fatalf("reverted = %v, want 2 versions", reverted)
 	}
 	st, _ = Current(ctx, pool, fsys)
-	if st.Current != 4 {
+	if st.Current != 5 {
 		t.Fatalf("Current = %d after Down(2), want 4", st.Current)
 	}
 
@@ -212,8 +212,8 @@ func TestUpDownCycle_Integration(t *testing.T) {
 		t.Fatalf("re-Up(all) unexpected error: %v", err)
 	}
 	st, _ = Current(ctx, pool, fsys)
-	if st.Current != 6 {
-		t.Fatalf("Current = %d after re-up, want 6", st.Current)
+	if st.Current != 7 {
+		t.Fatalf("Current = %d after re-up, want 7", st.Current)
 	}
 
 	if _, err := Up(ctx, pool, fsys, 0); err != nil {
