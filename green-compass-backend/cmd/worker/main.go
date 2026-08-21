@@ -11,6 +11,7 @@ import (
 	"green-compass-backend/internal/config"
 	"green-compass-backend/internal/connectors"
 	"green-compass-backend/internal/ingestion"
+	"green-compass-backend/internal/normalization"
 	"green-compass-backend/internal/places"
 	"green-compass-backend/internal/sources"
 	"green-compass-backend/pkg/database"
@@ -69,7 +70,9 @@ func run() error {
 	}
 
 	ingestionRepo := ingestion.NewRepository(pool)
-	ingestionSvc := ingestion.NewService(ingestionRepo, registry)
+	normService := normalization.NewService()
+	normRepo := normalization.NewRepository(pool)
+	ingestionSvc := ingestion.NewService(ingestionRepo, registry, normService, normRepo)
 	sourcesSvc := sources.NewService(sources.NewRepository(pool))
 	placesRepo := places.NewRepository(pool)
 

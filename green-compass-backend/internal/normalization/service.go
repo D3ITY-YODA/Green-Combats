@@ -73,17 +73,24 @@ func (s *Service) normalizeOpenMeteo(raw ingestion.RawRecord) ([]CanonicalObserv
 		}
 
 		valid := val >= m.min && val <= m.max
+		topicKey := inferTopicKey(m.variable)
 		results = append(results, CanonicalObservation{
-			ID:          uuid.New(),
-			RawRecordID: raw.ID,
-			SourceID:    raw.SourceID,
-			PlaceID:     raw.PlaceID,
-			SourceCode:  sources.CodeOpenMeteo,
-			Variable:    m.variable,
-			Value:       val,
-			Unit:        m.unit,
-			ObservedAt:  raw.SourceObservedAt,
-			Valid:       valid,
+			ID:             uuid.New(),
+			RawRecordID:    raw.ID,
+			SourceID:       raw.SourceID,
+			PlaceID:        raw.PlaceID,
+			SourceCode:     sources.CodeOpenMeteo,
+			DatasetKey:     "forecast",
+			TopicKey:       topicKey,
+			Variable:       m.variable,
+			Value:          val,
+			Unit:           m.unit,
+			ObservedAt:     raw.SourceObservedAt,
+			RetrievedAt:    raw.FetchedAt,
+			IsForecast:     raw.SourceObservedAt.After(time.Now().UTC()),
+			QualityStatus:  "accepted",
+			RawAssetRef:    raw.SourceURL,
+			Valid:          valid,
 		})
 	}
 
@@ -127,17 +134,24 @@ func (s *Service) normalizeNASAPower(raw ingestion.RawRecord) ([]CanonicalObserv
 		}
 
 		valid := val >= m.min && val <= m.max
+		topicKey := inferTopicKey(m.variable)
 		results = append(results, CanonicalObservation{
-			ID:          uuid.New(),
-			RawRecordID: raw.ID,
-			SourceID:    raw.SourceID,
-			PlaceID:     raw.PlaceID,
-			SourceCode:  sources.CodeNASAPower,
-			Variable:    m.variable,
-			Value:       val,
-			Unit:        m.unit,
-			ObservedAt:  raw.SourceObservedAt,
-			Valid:       valid,
+			ID:             uuid.New(),
+			RawRecordID:    raw.ID,
+			SourceID:       raw.SourceID,
+			PlaceID:        raw.PlaceID,
+			SourceCode:     sources.CodeNASAPower,
+			DatasetKey:     "historical",
+			TopicKey:       topicKey,
+			Variable:       m.variable,
+			Value:          val,
+			Unit:           m.unit,
+			ObservedAt:     raw.SourceObservedAt,
+			RetrievedAt:    raw.FetchedAt,
+			IsForecast:     false,
+			QualityStatus:  "accepted",
+			RawAssetRef:    raw.SourceURL,
+			Valid:          valid,
 		})
 	}
 

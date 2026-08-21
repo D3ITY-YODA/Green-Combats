@@ -19,7 +19,9 @@ type indicatorRepo interface {
 }
 
 type NormalizationRepository interface {
-	ListCanonicalObservations(ctx context.Context, placeID, sourceID uuid.UUID, from, to time.Time) ([]normalization.CanonicalObservation, error)
+	ListByPlace(ctx context.Context, placeID uuid.UUID, from, to time.Time) ([]normalization.CanonicalObservation, error)
+	ListBySourceAndPlace(ctx context.Context, sourceKey, datasetKey string, placeID uuid.UUID, from, to time.Time) ([]normalization.CanonicalObservation, error)
+	ListByTopicAndPlace(ctx context.Context, topicKey string, placeID uuid.UUID, from, to time.Time) ([]normalization.CanonicalObservation, error)
 }
 
 type Service struct {
@@ -62,22 +64,11 @@ func (s *Service) ComputeForPlace(ctx context.Context, placeID uuid.UUID, period
 
 // compute derives a single indicator value from normalized observations
 func (s *Service) compute(ctx context.Context, placeID uuid.UUID, def Definition, periodStart, periodEnd time.Time) (*Indicator, error) {
-	// For now, compute against all sources; future: check which source provides this variable
-	var allObservations []normalization.CanonicalObservation
-	sourceIDs := []uuid.UUID{
-		uuid.Nil, // Placeholder; would iterate through enabled sources in production
-	}
-
-	for _, sourceID := range sourceIDs {
-		// Skip if sourceID is nil; in production, iterate over enabled sources
-		if sourceID == uuid.Nil {
-			continue
-		}
-		obs, err := s.normRepo.ListCanonicalObservations(ctx, placeID, sourceID, periodStart, periodEnd)
-		if err != nil {
-			continue
-		}
-		allObservations = append(allObservations, obs...)
+	// Fetch normalized observations for this place and period
+	allObservations, err := s.normRepo.ListByPlace(ctx, placeID, periodStart, periodEnd)
+	if err != nil {
+		s.logger.Warn("failed to fetch normalized observations", "place_id", placeID, "err", err)
+		allObservations = []normalization.CanonicalObservation{}
 	}
 
 	ind := &Indicator{
