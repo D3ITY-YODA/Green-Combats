@@ -80,7 +80,8 @@ func (h *Handler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, httpx.Success(gin.H{"project": project}))
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusCreated, httpx.Success(gin.H{"project": project}, requestID))
 }
 
 // List returns paginated projects for an organization.
@@ -128,9 +129,10 @@ func (h *Handler) List(c *gin.Context) {
 	}
 
 	pagination := httpx.CalculatePaginationMeta(resp.Page, resp.Limit, resp.Total)
+	requestID := httpx.GetRequestID(c)
 	c.JSON(http.StatusOK, httpx.SuccessWithPagination(gin.H{
 		"projects": resp.Projects,
-	}, pagination))
+	}, pagination, requestID))
 }
 
 // GetByID returns a single project.
@@ -148,7 +150,7 @@ func (h *Handler) GetByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"project": project}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"project": project}, httpx.GetRequestID(c)))
 }
 
 // Update modifies an existing project.
@@ -166,7 +168,7 @@ func (h *Handler) Update(c *gin.Context) {
 		Status      *string `json:"status"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		httpx.HandleError(c, httpx.InvalidParam("body", "invalid JSON"))
 		return
 	}
 
@@ -180,7 +182,7 @@ func (h *Handler) Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, httpx.Success(gin.H{"project": project}))
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"project": project}, httpx.GetRequestID(c)))
 }
 
 // Delete removes a project.
@@ -197,5 +199,5 @@ func (h *Handler) Delete(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"message": "project deleted"}, httpx.GetRequestID(c)))
 }

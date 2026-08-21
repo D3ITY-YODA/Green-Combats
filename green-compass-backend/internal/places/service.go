@@ -90,6 +90,16 @@ func (s *Service) Nearby(ctx context.Context, lat, lon, radiusM float64, limit i
 	return s.repo.Nearby(ctx, lat, lon, radiusM, limit)
 }
 
+func (s *Service) Search(ctx context.Context, query string, limit int) ([]Place, error) {
+	if limit <= 0 {
+		limit = 25
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	return s.repo.Search(ctx, query, limit)
+}
+
 type UpdateInput struct {
 	Name *string
 	Lat  *float64

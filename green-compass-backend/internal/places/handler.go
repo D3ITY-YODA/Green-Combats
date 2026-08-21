@@ -17,6 +17,7 @@ type API interface {
 	Create(context.Context, CreateInput) (*Place, error)
 	ByID(context.Context, uuid.UUID) (*Place, error)
 	Nearby(context.Context, float64, float64, float64, int) ([]WithDistance, error)
+	Search(context.Context, string, int) ([]Place, error)
 	Update(context.Context, uuid.UUID, UpdateInput, Caller) (*Place, error)
 }
 
@@ -32,6 +33,7 @@ func NewHandler(svc API, authService auth.API) *Handler {
 func (h *Handler) RegisterRoutes(r gin.IRouter) {
 	r.GET("/v1/places/:id", h.byID)
 	r.GET("/v1/places/nearby", h.nearby)
+	r.GET("/v1/places/search", h.search)
 	protected := r.Group("/v1/places", auth.Middleware(h.auth))
 	protected.POST("", h.create)
 	protected.PATCH("/:id", h.update)
@@ -108,6 +110,31 @@ func (h *Handler) nearby(c *gin.Context) {
 		item := placeJSON(&result[i].Place)
 		item["distance_m"] = result[i].DistanceMeters
 		response = append(response, item)
+	}
+	requestID := httpx.GetRequestID(c)
+	c.JSON(http.StatusOK, httpx.Success(gin.H{"places": response}, requestID))
+}
+
+// Search searches for places by name
+// GET /v1/places/search?q=<query>&limit=25
+func (h *Handler) search(c *gin.Context) {
+	query := c.Query("q")
+	limit := 25
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	places, err := h.svc.Search(c.Request.Context(), query, limit)
+	if err != nil {
+		writeError(c, err)
+		return
+	}
+
+	response := make([]gin.H, 0, len(places))
+	for i := range places {
+		response = append(response, placeJSON(&places[i]))
 	}
 	requestID := httpx.GetRequestID(c)
 	c.JSON(http.StatusOK, httpx.Success(gin.H{"places": response}, requestID))
