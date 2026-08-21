@@ -1,0 +1,170 @@
+audit:
+  get:
+    tags: [audit]
+    summary: List audit trail entries
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+      - name: action
+        in: query
+        schema:
+          type: string
+      - name: resource_type
+        in: query
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Audit entries
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/PaginatedAuditEntries'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+  /{id}:
+    get:
+      tags: [audit]
+      summary: Get audit entry by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit entry
+        '401':
+          $ref: '../components/schemas.yaml#/ErrorResponse'
+        '403':
+          $ref: '../components/schemas.yaml#/ErrorResponse'
+
+projects:
+  post:
+    tags: [projects]
+    summary: Create a project
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas.yaml#/CreateProjectRequest'
+    responses:
+      '201':
+        description: Project created
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ProjectResponse'
+      '400':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+  get:
+    tags: [projects]
+    summary: List projects for an organization
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: org_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+    responses:
+      '200':
+        description: Project list
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/PaginatedProjects'
+      '400':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+  /{id}:
+    get:
+      tags: [projects]
+      summary: Get project by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Project
+        '404':
+          $ref: '../components/schemas.yaml#/ErrorResponse'
+
+    put:
+      tags: [projects]
+      summary: Update a project
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/UpdateProjectRequest'
+      responses:
+        '200':
+          description: Updated project
+        '404':
+          $ref: '../components/schemas.yaml#/ErrorResponse'
+
+    delete:
+      tags: [projects]
+      summary: Delete a project
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '../components/schemas.yaml#/ErrorResponse'
