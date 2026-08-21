@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greencompass-notifier
+  namespace: greencompass
+  labels:
+    app: greencompass-notifier
+    component: notifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greencompass-notifier
+  template:
+    metadata:
+      labels:
+        app: greencompass-notifier
+        component: notifier
+    spec:
+      containers:
+        - name: notifier
+          image: greencompass-api:latest
+          # Override entrypoint to run notifier binary
+          envFrom:
+            - configMapRef:
+                name: greencompass-config
+            - secretRef:
+                name: greencompass-secrets
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi

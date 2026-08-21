@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greencompass-scheduler
+  namespace: greencompass
+  labels:
+    app: greencompass-scheduler
+    component: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greencompass-scheduler
+  template:
+    metadata:
+      labels:
+        app: greencompass-scheduler
+        component: scheduler
+    spec:
+      containers:
+        - name: scheduler
+          image: greencompass-api:latest
+          # Override entrypoint to run scheduler binary
+          envFrom:
+            - configMapRef:
+                name: greencompass-config
+            - secretRef:
+                name: greencompass-secrets
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
