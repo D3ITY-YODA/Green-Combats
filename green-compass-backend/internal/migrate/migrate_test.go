@@ -151,27 +151,27 @@ func TestUpDownCycle_Integration(t *testing.T) {
 	if st.Current != 0 {
 		t.Fatalf("Current = %d after reset, want 0", st.Current)
 	}
-	if len(st.Pending) != 7 {
-		t.Fatalf("Pending = %v, want 6 versions", st.Pending)
+	if len(st.Pending) != 8 {
+		t.Fatalf("Pending = %v, want 8 versions", st.Pending)
 	}
 
 	applied, err := Up(ctx, pool, fsys, 0)
 	if err != nil {
 		t.Fatalf("Up(all) unexpected error: %v", err)
 	}
-	if len(applied) != 7 {
-		t.Fatalf("applied = %v, want 6 versions", applied)
+	if len(applied) != 8 {
+		t.Fatalf("applied = %v, want 8 versions", applied)
 	}
 
 	st, err = Current(ctx, pool, fsys)
 	if err != nil {
 		t.Fatalf("Status() unexpected error: %v", err)
 	}
-	if st.Current != 7 || len(st.Pending) != 0 {
-		t.Fatalf("status after up-all = current %d pending %v, want current 6 pending empty", st.Current, st.Pending)
+	if st.Current != 8 || len(st.Pending) != 0 {
+		t.Fatalf("status after up-all = current %d pending %v, want current 8 pending empty", st.Current, st.Pending)
 	}
 
-	for _, table := range []string{"users", "organizations", "organization_members", "places", "user_saved_places", "observations", "updates"} {
+	for _, table := range []string{"users", "organizations", "organization_members", "places", "user_saved_places", "observations", "updates", "data_sources", "ingestion_runs", "raw_records"} {
 		var exists bool
 		if err := pool.QueryRow(ctx,
 			"SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = $1)", table).Scan(&exists); err != nil {
@@ -190,15 +190,15 @@ func TestUpDownCycle_Integration(t *testing.T) {
 		t.Fatalf("reverted = %v, want 2 versions", reverted)
 	}
 	st, _ = Current(ctx, pool, fsys)
-	if st.Current != 5 {
-		t.Fatalf("Current = %d after Down(2), want 4", st.Current)
+	if st.Current != 6 {
+		t.Fatalf("Current = %d after Down(2), want 6", st.Current)
 	}
 
 	if _, err := Up(ctx, pool, fsys, 0); err != nil {
 		t.Fatalf("re-Up(all) unexpected error: %v", err)
 	}
 	st, _ = Current(ctx, pool, fsys)
-	if st.Current != 7 {
+	if st.Current != 8 {
 		t.Fatalf("Current = %d after re-up, want 7", st.Current)
 	}
 
