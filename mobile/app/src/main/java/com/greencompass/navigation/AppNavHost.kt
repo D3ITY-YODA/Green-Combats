@@ -1,11 +1,11 @@
 package com.greencompass.navigation
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.greencompass.feature.onboarding.*
+import com.greencompass.feature.today.TodayRoute
 
 @Composable
 fun AppNavHost() {
@@ -120,11 +120,38 @@ fun AppNavHost() {
                 onConfirmPlace = { navController.popBackStack(); navController.navigate(AppRoute.Interests) }
             )
         }
-        // Placeholders for remaining onboarding to prevent compile errors
-        composable<AppRoute.Interests> { Text("Interests Screen") }
-        composable<AppRoute.NotificationPreferences> { Text("Notification Preferences Screen") }
-        composable<AppRoute.PrivacyPermission> { Text("Privacy Permission Screen") }
-        composable<AppRoute.SetupComplete> { Text("Setup Complete Screen") }
-        composable<AppRoute.Today> { Text("Today Screen") }
+        composable<AppRoute.Interests> {
+            InterestsScreen(
+                onBack = { navController.popBackStack() },
+                onContinue = { navController.navigate(AppRoute.NotificationPreferences) },
+                onSkip = { navController.navigate(AppRoute.NotificationPreferences) }
+            )
+        }
+        composable<AppRoute.NotificationPreferences> {
+            NotificationPreferencesScreen(
+                onBack = { navController.popBackStack() },
+                onContinue = { navController.navigate(AppRoute.PrivacyPermission) }
+            )
+        }
+        composable<AppRoute.PrivacyPermission> {
+            PrivacyPermissionScreen(
+                onBack = { navController.popBackStack() },
+                onAllowLocation = { navController.navigate(AppRoute.SetupComplete) },
+                onChooseManually = { navController.navigate(AppRoute.SetupComplete) },
+                onReadPrivacy = { }
+            )
+        }
+        composable<AppRoute.SetupComplete> {
+            SetupCompleteScreen(
+                onFinish = { 
+                    navController.navigate(AppRoute.Today) { 
+                        popUpTo(AppRoute.Welcome) { inclusive = true } 
+                    } 
+                }
+            )
+        }
+        composable<AppRoute.Today> {
+            TodayRoute()
+        }
     }
 }
