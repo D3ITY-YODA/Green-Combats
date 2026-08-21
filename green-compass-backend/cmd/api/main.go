@@ -14,11 +14,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	gcctx "green-compass-backend/internal/context"
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/config"
 	"green-compass-backend/internal/health"
 	"green-compass-backend/internal/places"
 	"green-compass-backend/internal/preferences"
+	"green-compass-backend/internal/updates"
 	"green-compass-backend/internal/users"
 	"green-compass-backend/pkg/clock"
 	"green-compass-backend/pkg/database"
@@ -96,9 +98,18 @@ func run() error {
 	healthService := health.NewService(version, clock.New())
 	health.NewHandler(healthService).RegisterRoutes(router)
 	auth.NewHandler(authSvc).RegisterRoutes(router)
+
 	placeSvc := places.NewService(places.NewRepository(pool))
 	places.NewHandler(placeSvc, authSvc).RegisterRoutes(router)
-	preferences.NewHandler(preferences.NewService(preferences.NewRepository(pool))).RegisterRoutes(router, authSvc)
+
+	preferencesSvc := preferences.NewService(preferences.NewRepository(pool))
+	preferences.NewHandler(preferencesSvc).RegisterRoutes(router, authSvc)
+
+	updatesSvc := updates.NewService(updates.NewRepository(pool), logger)
+	updates.NewHandler(updatesSvc).RegisterRoutes(router, auth.Middleware(authSvc))
+
+	contextSvc := gcctx.NewService(preferencesSvc, placeSvc, updatesSvc, logger)
+	gcctx.NewHandler(contextSvc).RegisterRoutes(router, auth.Middleware(authSvc))
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)),
