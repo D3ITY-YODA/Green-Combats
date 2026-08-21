@@ -80,7 +80,7 @@ auth:
   secret: "staging-secret-0123456789abcdef0123456789abcdef"
 `)
 
-	cfg, err := config.Load(config.LoadOptions{Path: path})
+	cfg, err := config.Load(config.LoadOptions{Path: path, Lookup: lookupFrom(nil)})
 	if err != nil {
 		t.Fatalf("Load() unexpected error: %v", err)
 	}
@@ -167,7 +167,7 @@ auth:
   issuer: custom-issuer
 `)
 
-	cfg, err := config.Load(config.LoadOptions{Path: path})
+	cfg, err := config.Load(config.LoadOptions{Path: path, Lookup: lookupFrom(nil)})
 	if err != nil {
 		t.Fatalf("Load() unexpected error: %v", err)
 	}
@@ -293,7 +293,7 @@ server:
   prot: 9000
 `)
 
-	_, err := config.Load(config.LoadOptions{Path: path})
+	_, err := config.Load(config.LoadOptions{Path: path, Lookup: lookupFrom(nil)})
 	if err == nil {
 		t.Fatal("Load() expected error for unknown key, got nil")
 	}
