@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 type Assessment struct {
@@ -15,8 +14,8 @@ type Assessment struct {
 	PeriodEnd            time.Time
 	UrgencyScore         int // 0–100, backend-only
 	ConfidenceScore      int // 0–100, data freshness + source reliability
-	ApplicableIndicators pq.UUIDArray
-	AffectedGroups       pq.StringArray // e.g. ["farmers", "water_users"]
+	ApplicableIndicators []uuid.UUID
+	AffectedGroups       []string
 	AssessmentSummary    *string
 	CreatedAt            time.Time
 }

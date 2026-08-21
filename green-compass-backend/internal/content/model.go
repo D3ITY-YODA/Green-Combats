@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 type Content struct {
@@ -18,7 +17,7 @@ type Content struct {
 	Headline        string
 	BodyText        string
 	CallToAction    *string
-	SourceIndicators pq.UUIDArray
+	SourceIndicators []uuid.UUID
 	CreatedAt       time.Time
 }
 

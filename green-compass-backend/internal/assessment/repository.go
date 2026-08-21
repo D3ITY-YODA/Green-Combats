@@ -2,7 +2,6 @@ package assessment
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lib/pq"
 )
 
 var ErrNotFound = errors.New("assessment not found")
@@ -44,7 +42,7 @@ func (r *Repository) Store(ctx context.Context, a *Assessment) error {
 	err := r.pool.QueryRow(
 		ctx, query,
 		a.PlaceID, a.AssessedAt, a.PeriodStart, a.PeriodEnd,
-		a.UrgencyScore, a.ConfidenceScore, pq.Array(a.ApplicableIndicators), pq.Array(a.AffectedGroups), a.AssessmentSummary,
+		a.UrgencyScore, a.ConfidenceScore, a.ApplicableIndicators, a.AffectedGroups, a.AssessmentSummary,
 	).Scan(&a.ID, &a.CreatedAt)
 
 	if err != nil {
@@ -74,12 +72,10 @@ func (r *Repository) GetForPeriod(ctx context.Context, placeID uuid.UUID, period
 		LIMIT 1
 	`
 	var a Assessment
-	var indicators pq.UUIDArray
-	var groups pq.StringArray
 
 	err := r.pool.QueryRow(ctx, query, placeID, periodStart, periodEnd).Scan(
 		&a.ID, &a.PlaceID, &a.AssessedAt, &a.PeriodStart, &a.PeriodEnd,
-		&a.UrgencyScore, &a.ConfidenceScore, &indicators, &groups, &a.AssessmentSummary, &a.CreatedAt,
+		&a.UrgencyScore, &a.ConfidenceScore, &a.ApplicableIndicators, &a.AffectedGroups, &a.AssessmentSummary, &a.CreatedAt,
 	)
 
 	if err != nil {
@@ -89,19 +85,15 @@ func (r *Repository) GetForPeriod(ctx context.Context, placeID uuid.UUID, period
 		return nil, fmt.Errorf("query assessment: %w", err)
 	}
 
-	a.ApplicableIndicators = indicators
-	a.AffectedGroups = groups
 	return &a, nil
 }
 
 func (r *Repository) scanAssessment(ctx context.Context, query string, args ...interface{}) (*Assessment, error) {
 	var a Assessment
-	var indicators pq.UUIDArray
-	var groups pq.StringArray
 
 	err := r.pool.QueryRow(ctx, query, args...).Scan(
 		&a.ID, &a.PlaceID, &a.AssessedAt, &a.PeriodStart, &a.PeriodEnd,
-		&a.UrgencyScore, &a.ConfidenceScore, &indicators, &groups, &a.AssessmentSummary, &a.CreatedAt,
+		&a.UrgencyScore, &a.ConfidenceScore, &a.ApplicableIndicators, &a.AffectedGroups, &a.AssessmentSummary, &a.CreatedAt,
 	)
 
 	if err != nil {
@@ -111,8 +103,6 @@ func (r *Repository) scanAssessment(ctx context.Context, query string, args ...i
 		return nil, fmt.Errorf("query assessment: %w", err)
 	}
 
-	a.ApplicableIndicators = indicators
-	a.AffectedGroups = groups
 	return &a, nil
 }
 

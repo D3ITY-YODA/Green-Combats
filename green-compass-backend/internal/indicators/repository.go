@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lib/pq"
 )
 
 var ErrNotFound = errors.New("indicator not found")
@@ -30,9 +29,8 @@ func (r *Repository) GetDefinitionByCode(ctx context.Context, code string) (*Def
 		WHERE code = $1
 	`
 	var def Definition
-	var variables pq.StringArray
 	err := r.pool.QueryRow(ctx, query, code).Scan(
-		&def.ID, &def.Code, &def.DisplayName, &def.Category, &variables, &def.Description, &def.CreatedAt, &def.UpdatedAt,
+		&def.ID, &def.Code, &def.DisplayName, &def.Category, &def.SourceVariables, &def.Description, &def.CreatedAt, &def.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -40,7 +38,6 @@ func (r *Repository) GetDefinitionByCode(ctx context.Context, code string) (*Def
 		}
 		return nil, fmt.Errorf("query definition: %w", err)
 	}
-	def.SourceVariables = variables
 	return &def, nil
 }
 
@@ -59,11 +56,9 @@ func (r *Repository) ListDefinitions(ctx context.Context) ([]Definition, error) 
 	var defs []Definition
 	for rows.Next() {
 		var def Definition
-		var variables pq.StringArray
-		if err := rows.Scan(&def.ID, &def.Code, &def.DisplayName, &def.Category, &variables, &def.Description, &def.CreatedAt, &def.UpdatedAt); err != nil {
+		if err := rows.Scan(&def.ID, &def.Code, &def.DisplayName, &def.Category, &def.SourceVariables, &def.Description, &def.CreatedAt, &def.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("scan definition: %w", err)
 		}
-		def.SourceVariables = variables
 		defs = append(defs, def)
 	}
 	return defs, rows.Err()

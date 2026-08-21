@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 type Definition struct {
@@ -12,7 +11,7 @@ type Definition struct {
 	Code             string
 	DisplayName      string
 	Category         string // weather, water, agriculture, air_quality
-	SourceVariables  pq.StringArray
+	SourceVariables  []string
 	Description      string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time

@@ -4,12 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lib/pq"
 )
 
 var ErrNotFound = errors.New("content not found")
@@ -42,7 +40,7 @@ func (r *Repository) Store(ctx context.Context, c *Content) error {
 	err := r.pool.QueryRow(
 		ctx, query,
 		c.PlaceID, c.GeneratedAt, c.PeriodStart, c.PeriodEnd,
-		c.ContentType, c.Language, c.Headline, c.BodyText, c.CallToAction, pq.Array(c.SourceIndicators),
+		c.ContentType, c.Language, c.Headline, c.BodyText, 		c.CallToAction, &c.SourceIndicators,
 	).Scan(&c.ID, &c.CreatedAt)
 
 	if err != nil {
@@ -81,12 +79,10 @@ func (r *Repository) ListForPlace(ctx context.Context, placeID uuid.UUID, limit 
 	var contents []Content
 	for rows.Next() {
 		var c Content
-		var indicators pq.UUIDArray
 		if err := rows.Scan(&c.ID, &c.PlaceID, &c.GeneratedAt, &c.PeriodStart, &c.PeriodEnd,
-			&c.ContentType, &c.Language, &c.Headline, &c.BodyText, &c.CallToAction, &indicators, &c.CreatedAt); err != nil {
+			&c.ContentType, &c.Language, &c.Headline, &c.BodyText, &c.CallToAction, &c.SourceIndicators, &c.CreatedAt); err != nil {
 			return nil, fmt.Errorf("scan content: %w", err)
 		}
-		c.SourceIndicators = indicators
 		contents = append(contents, c)
 	}
 	return contents, rows.Err()
@@ -94,11 +90,10 @@ func (r *Repository) ListForPlace(ctx context.Context, placeID uuid.UUID, limit 
 
 func (r *Repository) scanContent(ctx context.Context, query string, args ...interface{}) (*Content, error) {
 	var c Content
-	var indicators pq.UUIDArray
 
 	err := r.pool.QueryRow(ctx, query, args...).Scan(
 		&c.ID, &c.PlaceID, &c.GeneratedAt, &c.PeriodStart, &c.PeriodEnd,
-		&c.ContentType, &c.Language, &c.Headline, &c.BodyText, &c.CallToAction, &indicators, &c.CreatedAt,
+		&c.ContentType, &c.Language, &c.Headline, &c.BodyText, &c.CallToAction, &c.SourceIndicators, &c.CreatedAt,
 	)
 
 	if err != nil {
@@ -108,6 +103,5 @@ func (r *Repository) scanContent(ctx context.Context, query string, args ...inte
 		return nil, fmt.Errorf("query content: %w", err)
 	}
 
-	c.SourceIndicators = indicators
 	return &c, nil
 }
