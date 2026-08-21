@@ -14,9 +14,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/config"
 	"green-compass-backend/internal/health"
+	"green-compass-backend/internal/users"
 	"green-compass-backend/pkg/clock"
+	"green-compass-backend/pkg/database"
 	"green-compass-backend/pkg/httpx"
 	"green-compass-backend/pkg/logging"
 )
@@ -56,11 +59,41 @@ func run() error {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	if cfg.Database.URL == "" {
+		return fmt.Errorf("database.url must be configured for the api process")
+	}
+
+	pool, err := database.Connect(ctx, database.Options{
+		URL:               cfg.Database.URL,
+		MaxConns:          cfg.Database.MaxConns,
+		MinConns:          cfg.Database.MinConns,
+		ConnMaxLifetime:   time.Duration(cfg.Database.ConnMaxLifetime),
+		ConnMaxIdleTime:   time.Duration(cfg.Database.ConnMaxIdleTime),
+		HealthCheckPeriod: time.Duration(cfg.Database.HealthCheckPeriod),
+	})
+	if err != nil {
+		return fmt.Errorf("connect database: %w", err)
+	}
+	defer pool.Close()
+
+	userSvc := users.NewService(users.NewRepository(pool))
+	authRepo := auth.NewRepository(pool)
+	authSvc, err := auth.NewService(userSvc, authRepo, clock.New(), auth.Options{
+		Secret:     cfg.Auth.Secret,
+		Issuer:     cfg.Auth.Issuer,
+		AccessTTL:  time.Duration(cfg.Auth.AccessTokenTTL),
+		RefreshTTL: time.Duration(cfg.Auth.RefreshTokenTTL),
+	})
+	if err != nil {
+		return fmt.Errorf("init auth service: %w", err)
+	}
+
 	router := gin.New()
 	router.Use(gin.Recovery(), httpx.RequestLogger(logger, clock.New()))
 
 	healthService := health.NewService(version, clock.New())
 	health.NewHandler(healthService).RegisterRoutes(router)
+	auth.NewHandler(authSvc).RegisterRoutes(router)
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)),
