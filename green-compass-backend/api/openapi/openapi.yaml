@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: GreenCompass API
+  description: |
+    Location-aware climate and environmental information service.
+    Provides plain-language updates, community observations, and institutional reporting.
+  version: 1.0.0
+  contact:
+    name: GreenCompass Team
+
+servers:
+  - url: http://localhost:8080/v1
+    description: Local development
+  - url: https://api.greencompass.org/v1
+    description: Production
+
+tags:
+  - name: auth
+    description: Authentication and user registration
+  - name: users
+    description: User management
+  - name: places
+    description: Location and place management
+  - name: preferences
+    description: User preferences and saved places
+  - name: updates
+    description: Climate updates and content
+  - name: context
+    description: User context for today screen
+  - name: explore
+    description: Discovery and exploration
+  - name: observations
+    description: Community observations and reports
+  - name: reports
+    description: Institutional review queue
+  - name: notifications
+    description: Notification preferences and records
+  - name: audit
+    description: Audit trail
+  - name: projects
+    description: Institutional projects
+  - name: reporting
+    description: Impact metrics and dashboards
+  - name: health
+    description: Health check
+
+paths:
+  /health:
+    $ref: './paths/health.yaml'
+
+  /auth/register:
+    $ref: './paths/auth.yaml#/register'
+  /auth/login:
+    $ref: './paths/auth.yaml#/login'
+  /auth/refresh:
+    $ref: './paths/auth.yaml#/refresh'
+  /auth/logout:
+    $ref: './paths/auth.yaml#/logout'
+  /auth/me:
+    $ref: './paths/auth.yaml#/me'
+
+  /users:
+    $ref: './paths/users.yaml'
+
+  /places:
+    $ref: './paths/places.yaml'
+
+  /preferences:
+    $ref: './paths/context.yaml#/preferences'
+
+  /updates:
+    $ref: './paths/updates.yaml'
+
+  /explore:
+    $ref: './paths/explore.yaml'
+
+  /context:
+    $ref: './paths/context.yaml#/context'
+
+  /observations:
+    $ref: './paths/observations.yaml'
+
+  /reports:
+    $ref: './paths/reports.yaml'
+
+  /notifications:
+    $ref: './paths/notifications.yaml#/notifications'
+  /notifications/preferences:
+    $ref: './paths/notifications.yaml#/preferences'
+
+  /audit:
+    $ref: './paths/console.yaml#/audit'
+
+  /projects:
+    $ref: './paths/console.yaml#/projects'
+
+  /reporting:
+    $ref: './paths/reports.yaml#/reporting'
+
+components:
+  schemas:
+    $ref: './components/schemas.yaml'
+  securitySchemes:
+    $ref: './components/security.yaml'
+
+security:
+  - bearerAuth: []

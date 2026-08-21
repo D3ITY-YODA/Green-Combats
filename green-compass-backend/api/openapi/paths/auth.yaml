@@ -1,0 +1,121 @@
+register:
+  post:
+    tags: [auth]
+    summary: Register a new user
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [display_name, password]
+            properties:
+              phone_number:
+                type: string
+              email:
+                type: string
+                format: email
+              display_name:
+                type: string
+              password:
+                type: string
+                minLength: 8
+              language:
+                type: string
+                default: en
+    responses:
+      '201':
+        description: User registered
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/UserWithTokens'
+      '400':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+      '409':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+login:
+  post:
+    tags: [auth]
+    summary: Login with credentials
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [identifier, password]
+            properties:
+              identifier:
+                type: string
+                description: Email or phone number
+              password:
+                type: string
+    responses:
+      '200':
+        description: Login successful
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/TokenPairResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+refresh:
+  post:
+    tags: [auth]
+    summary: Refresh access token
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [refresh_token]
+            properties:
+              refresh_token:
+                type: string
+    responses:
+      '200':
+        description: Token refreshed
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/TokenPairResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'
+
+logout:
+  post:
+    tags: [auth]
+    summary: Logout (revoke refresh token)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [refresh_token]
+            properties:
+              refresh_token:
+                type: string
+    responses:
+      '204':
+        description: Logged out
+
+me:
+  get:
+    tags: [auth]
+    summary: Get current user profile
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Current user
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/UserResponse'
+      '401':
+        $ref: '../components/schemas.yaml#/ErrorResponse'

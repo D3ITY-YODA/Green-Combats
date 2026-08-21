@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greencompass-worker
+  namespace: greencompass
+  labels:
+    app: greencompass-worker
+    component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greencompass-worker
+  template:
+    metadata:
+      labels:
+        app: greencompass-worker
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: greencompass-api:latest
+          command: ["api"]
+          args: []
+          # Override entrypoint to run worker binary
+          # In practice, use a separate image or entrypoint script
+          envFrom:
+            - configMapRef:
+                name: greencompass-config
+            - secretRef:
+                name: greencompass-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
