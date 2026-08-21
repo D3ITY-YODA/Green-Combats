@@ -1,45 +1,47 @@
-import Link from "next/link";
+// app/sign-in/page.tsx
+"use client";
+
+import { useRouter } from "next/navigation";
+import { Sprout, ArrowRight } from "lucide-react";
 
 export default function SignInPage() {
-  return (
-    <div className="rounded-2xl border border-stone bg-white p-8 shadow-sm">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-semibold text-charcoal">Welcome back</h1>
-        <p className="mt-2 text-sm text-muted">
-          Clear environmental updates for the places that matter to you.
-        </p>
-      </div>
+  const router = useRouter();
 
-      <form className="space-y-4">
-        <div>
-          <label htmlFor="phone-email" className="block text-sm font-medium text-charcoal">
-            Phone or email
-          </label>
-          <input
-            id="phone-email"
-            type="text"
-            className="mt-1 block w-full rounded-xl border border-stone bg-warm-white p-3 text-charcoal placeholder-muted focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
-            placeholder="Enter phone or email"
-          />
+  const handleContinue = () => {
+    // Bypass complex auth and go straight to the core experience
+    // In a real app, this might set a lightweight guest session
+    router.push("/today");
+  };
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-background">
+      <div className="w-full max-w-md text-center space-y-8">
+        {/* Logo / Brand */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="p-4 rounded-full bg-forest/10">
+            <Sprout className="h-10 w-10 text-forest" />
+          </div>
+          <h1 className="text-page font-bold text-forest-deep">Green Compass</h1>
+          <p className="text-body text-text-muted max-w-xs mx-auto">
+            A calm, location-specific view of what is happening in your area.
+          </p>
         </div>
 
-        <button
-          type="submit"
-          className="w-full rounded-xl bg-forest px-4 py-3 font-medium text-white transition-colors hover:bg-deep-forest"
-        >
-          Continue
-        </button>
-      </form>
-
-      <div className="mt-6 text-center text-sm text-muted">
-        <Link href="/sign-up" className="font-medium text-forest hover:underline">
-          Create an account
-        </Link>
-        <span className="mx-2">·</span>
-        <Link href="/organization-search" className="font-medium text-forest hover:underline">
-          Join an organization
-        </Link>
+        {/* Frictionless Entry (PDF: "should not force users to identify themselves through complex forms") */}
+        <div className="space-y-4 pt-4">
+          <button
+            onClick={handleContinue}
+            className="w-full py-4 rounded-xl bg-forest text-white font-medium flex items-center justify-center gap-2 hover:bg-forest-deep transition-colors shadow-sm"
+          >
+            Continue to Dashboard
+            <ArrowRight className="h-4 w-4" />
+          </button>
+          
+          <p className="text-metadata text-text-muted">
+            No complex forms required. You can select your location and preferences quietly inside the app.
+          </p>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
