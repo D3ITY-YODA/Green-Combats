@@ -20,10 +20,26 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.fillMaxWidth().height(AppSpacing.huge),
-        colors = ButtonDefaults.buttonColors(containerColor = GreenCompassColors.ForestGreen, contentColor = Color.White),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = GreenCompassColors.ForestGreen, 
+            contentColor = Color.White
+        ),
         shape = RoundedCornerShape(12.dp)
     ) {
         Text(text = text, style = GreenCompassTypography.labelLarge)
+    }
+}
+
+@Composable
+fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.fillMaxWidth().height(AppSpacing.huge),
+        border = BorderStroke(1.dp, GreenCompassColors.Stone),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(text = text, style = GreenCompassTypography.labelLarge, color = GreenCompassColors.ForestGreen)
     }
 }
 

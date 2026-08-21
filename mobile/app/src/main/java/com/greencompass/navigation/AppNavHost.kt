@@ -4,9 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.greencompass.feature.onboarding.AccountChoiceScreen
-import com.greencompass.feature.onboarding.LanguageSelectionScreen
-import com.greencompass.feature.onboarding.WelcomeScreen
+import com.greencompass.feature.onboarding.*
 
 @Composable
 fun AppNavHost() {
@@ -27,10 +25,44 @@ fun AppNavHost() {
         }
         composable<AppRoute.AccountChoice> {
             AccountChoiceScreen(
-                onPersonal = { /* Next: Personal Registration */ },
-                onOrganization = { /* Next: Organization Search */ },
-                onInvitation = { /* Next: Invitation Acceptance */ },
-                onSignIn = { /* Next: Phone/Email Sign In */ }
+                onPersonal = { navController.navigate(AppRoute.PersonalRegistration) },
+                onOrganization = { /* TODO: Organization Search */ },
+                onInvitation = { /* TODO: Invitation Acceptance */ },
+                onSignIn = { navController.navigate(AppRoute.PhoneEmailSignIn) }
+            )
+        }
+        composable<AppRoute.PersonalRegistration> {
+            PersonalRegistrationScreen(
+                onBack = { navController.popBackStack() },
+                onContinueWithGoogle = { navController.navigate(AppRoute.GoogleSignIn) },
+                onContinue = { navController.navigate(AppRoute.VerificationCode) } // Simplified flow for demo
+            )
+        }
+        composable<AppRoute.GoogleSignIn> {
+            GoogleSignInScreen(
+                onBack = { navController.popBackStack() },
+                onSuccess = { navController.navigate(AppRoute.VerificationCode) },
+                onUsePhoneEmail = { 
+                    navController.popBackStack() 
+                    navController.navigate(AppRoute.PhoneEmailSignIn) 
+                }
+            )
+        }
+        composable<AppRoute.PhoneEmailSignIn> {
+            PhoneEmailSignInScreen(
+                onBack = { navController.popBackStack() },
+                onContinue = { navController.navigate(AppRoute.VerificationCode) },
+                onCreateAccount = { 
+                    navController.popBackStack() 
+                    navController.navigate(AppRoute.PersonalRegistration) 
+                }
+            )
+        }
+        composable<AppRoute.VerificationCode> {
+            VerificationCodeScreen(
+                onBack = { navController.popBackStack() },
+                onVerify = { /* TODO: Navigate to Location Selection */ },
+                onSendAgain = { /* TODO: Resend logic */ }
             )
         }
     }
