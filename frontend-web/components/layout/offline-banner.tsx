@@ -1,4 +1,3 @@
-// components/layout/offline-banner.tsx
 "use client";
 
 import { useOnlineStatus } from "@/hooks/use-online-status";
@@ -14,6 +13,5 @@ export function OfflineBanner() {
       <WifiOff className="h-4 w-4" />
       <span>You are currently offline. Showing cached information.</span>
     </div>
-    // Note: We use 'status-delayed' (grey) to keep it calm, not alarming like 'emergency' (red)
   );
 }

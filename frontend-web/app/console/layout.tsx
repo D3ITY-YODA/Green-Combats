@@ -1,7 +1,4 @@
-// app/console/layout.tsx
-
 import { ConsoleSidebar } from "@/components/navigation/console-sidebar";
-import { ConsoleHeader } from "@/components/layout/console-header";
 
 export default function ConsoleLayout({
   children,
@@ -9,17 +6,20 @@ export default function ConsoleLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-mist">
-      {/* Persistent left sidebar for organization navigation */}
+    <div className="flex min-h-screen bg-background-mist">
       <ConsoleSidebar />
-      
-      {/* Main content wrapper with left padding on large screens to clear the fixed sidebar */}
-      <div className="lg:pl-72">
-        {/* Top header with organization context, user info, and actions */}
-        <ConsoleHeader />
-        
-        {/* Page-specific content with responsive padding */}
-        <main className="p-4 md:p-8">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Console Top Header */}
+        <header className="bg-background border-b border-background-stone px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+          <div>
+            <h2 className="text-lg font-semibold text-text-charcoal">Lower Valley Water Authority</h2>
+            <p className="text-xs text-text-muted">Organization Administrator</p>
+          </div>
+          <div className="h-8 w-8 rounded-full bg-forest text-white flex items-center justify-center text-sm font-medium">
+            LV
+          </div>
+        </header>
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
           {children}
         </main>
       </div>
