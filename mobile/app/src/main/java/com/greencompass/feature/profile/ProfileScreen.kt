@@ -4,49 +4,39 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.greencompass.core.ui.GreenCompassColors
+import com.greencompass.core.ui.*
+import com.greencompass.navigation.AppRoute
 
 data class ProfileMenuItem(val title: String, val subtitle: String, val icon: ImageVector)
 
 @Composable
 fun ProfileScreen(
-    onOpenPlaces: () -> Unit,
-    onOpenSettings: () -> Unit,
-    onOpenHelp: () -> Unit,
-    onOpenAbout: () -> Unit,
-    onOpenSwitcher: () -> Unit
+    onNavigate: (AppRoute) -> Unit
 ) {
     val menuItems = listOf(
-        ProfileMenuItem("Saved places", "4 places", Icons.Outlined.Place),
-        ProfileMenuItem("Settings", "", Icons.Outlined.Settings),
-        ProfileMenuItem("Help & support", "", Icons.Outlined.Help),
-        ProfileMenuItem("About Green Compass", "", Icons.Outlined.Info)
+        ProfileMenuItem("Your places", "Manage the places you follow", Icons.Outlined.Place),
+        ProfileMenuItem("Updates", "Choose how you receive information", Icons.Outlined.Notifications),
+        ProfileMenuItem("Language", "English", Icons.Outlined.Language),
+        ProfileMenuItem("Accessibility", "Text size, contrast and audio", Icons.Outlined.Accessibility),
+        ProfileMenuItem("Privacy", "Manage your information", Icons.Outlined.PrivacyTip),
+        ProfileMenuItem("Organizations", "View your organization access", Icons.Outlined.Business),
+        ProfileMenuItem("Help", "Get support", Icons.Outlined.Help)
     )
 
-    Surface(modifier = Modifier.fillMaxSize(), color = GreenCompassColors.WarmWhite) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+    GreenCompassScaffold(title = "Profile") { paddingValues ->
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             item {
-                Row(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = androidx.compose.foundation.shape.CircleShape, color = GreenCompassColors.ForestGreen, modifier = Modifier.size(56.dp).clickable { onOpenSwitcher() }) {
-                        Box(contentAlignment = Alignment.Center) { Text(text = "JT", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
-                    }
-                    Spacer(Modifier.width(16.dp))
-                    Column(modifier = Modifier.clickable { onOpenSwitcher() }) {
-                        Text(text = "John Tabu", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = GreenCompassColors.Charcoal)
-                        Text(text = "Lower Valley", fontSize = 14.sp, color = GreenCompassColors.MutedText)
-                    }
+                Column(modifier = Modifier.fillMaxWidth().padding(AppSpacing.lg)) {
+                    Text(text = "Amina Njeri", style = GreenCompassTypography.headlineLarge, color = GreenCompassColors.Charcoal, modifier = Modifier.padding(bottom = AppSpacing.xs))
+                    Text(text = "Personal account", style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText)
                 }
                 Divider(color = GreenCompassColors.Stone)
             }
@@ -56,33 +46,37 @@ fun ProfileScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                        .padding(horizontal = AppSpacing.lg, vertical = AppSpacing.md)
                         .clickable {
                             when (item.title) {
-                                "Saved places" -> onOpenPlaces()
-                                "Settings" -> onOpenSettings()
-                                "Help & support" -> onOpenHelp()
-                                "About Green Compass" -> onOpenAbout()
+                                "Your places" -> onNavigate(AppRoute.Places)
+                                "Updates" -> onNavigate(AppRoute.NotificationSettings)
+                                "Language" -> onNavigate(AppRoute.LanguageSettings)
+                                "Accessibility" -> onNavigate(AppRoute.AccessibilitySettings)
+                                "Privacy" -> onNavigate(AppRoute.PrivacySettings)
+                                "Organizations" -> onNavigate(AppRoute.Organizations)
+                                "Help" -> onNavigate(AppRoute.Help)
                             }
                         },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(item.icon, contentDescription = null, tint = GreenCompassColors.Charcoal, modifier = Modifier.size(24.dp))
-                    Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.width(AppSpacing.md))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = item.title, fontSize = 16.sp, color = GreenCompassColors.Charcoal)
-                        if (item.subtitle.isNotEmpty()) Text(text = item.subtitle, fontSize = 13.sp, color = GreenCompassColors.MutedText)
+                        Text(text = item.title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal)
+                        if (item.subtitle.isNotEmpty()) {
+                            Text(text = item.subtitle, style = GreenCompassTypography.bodySmall, color = GreenCompassColors.MutedText)
+                        }
                     }
                     Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = GreenCompassColors.MutedText)
                 }
-                if (index < menuItems.size - 1) Divider(modifier = Modifier.padding(horizontal = 24.dp), color = GreenCompassColors.Stone)
-            }
-            
-            item {
-                Spacer(Modifier.height(24.dp))
-                TextButton(onClick = {}, modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
-                    Text(text = "Log out", color = Color(0xFFA93226), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                if (index < menuItems.size - 1) {
+                    Divider(modifier = Modifier.padding(horizontal = AppSpacing.lg), color = GreenCompassColors.Stone)
                 }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(AppSpacing.xxl))
             }
         }
     }

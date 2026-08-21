@@ -6,7 +6,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.greencompass.feature.explore.*
+import com.greencompass.feature.help.AboutScreen
+import com.greencompass.feature.help.HelpScreen
 import com.greencompass.feature.onboarding.*
+import com.greencompass.feature.organizations.*
+import com.greencompass.feature.places.*
+import com.greencompass.feature.profile.*
 import com.greencompass.feature.reports.*
 import com.greencompass.feature.today.TodayRoute
 import com.greencompass.feature.updates.*
@@ -65,5 +70,30 @@ fun AppNavHost() {
         }
         composable<AppRoute.ReportSubmitted> { ReportSubmittedScreen(onViewStatus = { navController.navigate(AppRoute.ReportStatus) }, onReturn = { navController.navigate(AppRoute.Today) { popUpTo(AppRoute.Today) { inclusive = true } } }) }
         composable<AppRoute.ReportStatus> { ReportStatusScreen(onBack = { navController.popBackStack() }) }
+
+        // Places
+        composable<AppRoute.Places> { PlacesScreen(onBack = { navController.popBackStack() }, onAddPlace = { navController.navigate(AppRoute.AddPlace) }, onOpenPlace = { placeId -> navController.navigate(AppRoute.PlaceDetails(placeId)) }) }
+        composable<AppRoute.AddPlace> { AddPlaceScreen(onBack = { navController.popBackStack() }, onUseLocation = { }, onSearch = { }, onChooseOnMap = { }) }
+        composable<AppRoute.PlaceDetails> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppRoute.PlaceDetails>()
+            PlaceDetailsScreen(placeId = route.placeId, onBack = { navController.popBackStack() }, onSetPrimary = { }, onEditName = { }, onRemove = { })
+        }
+
+        // Profile & Settings
+        composable<AppRoute.Profile> { ProfileScreen(onNavigate = { route -> navController.navigate(route) }) }
+        composable<AppRoute.Settings> { SettingsScreen(onBack = { navController.popBackStack() }, onNavigate = { route -> navController.navigate(route) }, onSignOut = { }) }
+        composable<AppRoute.NotificationSettings> { NotificationSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable<AppRoute.LanguageSettings> { LanguageSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable<AppRoute.AccessibilitySettings> { AccessibilitySettingsScreen(onBack = { navController.popBackStack() }) }
+        composable<AppRoute.PrivacySettings> { PrivacySettingsScreen(onBack = { navController.popBackStack() }, onDeleteAccount = { }) }
+
+        // Organizations
+        composable<AppRoute.Organizations> { OrganizationsScreen(onBack = { navController.popBackStack() }, onOpenOrganization = { navController.navigate(AppRoute.OrganizationView) }, onViewRequest = { }) }
+        composable<AppRoute.OrganizationSwitcher> { OrganizationSwitcherScreen(onBack = { navController.popBackStack() }, onSelect = { navController.popBackStack() }) }
+        composable<AppRoute.OrganizationView> { OrganizationViewScreen(onBack = { navController.popBackStack() }, onOpenOnWeb = { }, onReturnToPersonal = { navController.popBackStack() }) }
+
+        // Help & About
+        composable<AppRoute.Help> { HelpScreen(onBack = { navController.popBackStack() }, onContactSupport = { }) }
+        composable<AppRoute.About> { AboutScreen(onBack = { navController.popBackStack() }) }
     }
 }

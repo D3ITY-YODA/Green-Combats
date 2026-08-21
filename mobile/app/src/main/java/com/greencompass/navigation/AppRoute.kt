@@ -44,4 +44,26 @@ sealed interface AppRoute {
     @Serializable data class ReportForm(val reportType: String) : AppRoute
     @Serializable data object ReportSubmitted : AppRoute
     @Serializable data object ReportStatus : AppRoute
+    
+    // Places
+    @Serializable data object Places : AppRoute
+    @Serializable data object AddPlace : AppRoute
+    @Serializable data class PlaceDetails(val placeId: String) : AppRoute
+    
+    // Profile & Settings
+    @Serializable data object Profile : AppRoute
+    @Serializable data object Settings : AppRoute
+    @Serializable data object NotificationSettings : AppRoute
+    @Serializable data object LanguageSettings : AppRoute
+    @Serializable data object AccessibilitySettings : AppRoute
+    @Serializable data object PrivacySettings : AppRoute
+    
+    // Organizations
+    @Serializable data object Organizations : AppRoute
+    @Serializable data object OrganizationSwitcher : AppRoute
+    @Serializable data object OrganizationView : AppRoute
+    
+    // Help & About
+    @Serializable data object Help : AppRoute
+    @Serializable data object About : AppRoute
 }
