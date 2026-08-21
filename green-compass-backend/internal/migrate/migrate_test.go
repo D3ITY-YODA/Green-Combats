@@ -2,10 +2,13 @@ package migrate
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
 	"testing/fstest"
+	"time"
 
 	"green-compass-backend/pkg/database"
 )
@@ -19,6 +22,42 @@ func testPool(t *testing.T) *database.Pool {
 	pool, err := database.Connect(context.Background(), database.Options{URL: url})
 	if err != nil {
 		t.Fatalf("Connect() unexpected error: %v", err)
+	}
+	t.Cleanup(pool.Close)
+	return pool
+}
+
+func isolatedPool(t *testing.T) *database.Pool {
+	t.Helper()
+	base := os.Getenv("GC_TEST_DATABASE_URL")
+	if base == "" {
+		t.Skip("GC_TEST_DATABASE_URL not set; skipping integration test")
+	}
+	ctx := context.Background()
+
+	admin, err := database.Connect(ctx, database.Options{URL: base})
+	if err != nil {
+		t.Fatalf("connect admin database: %v", err)
+	}
+	t.Cleanup(admin.Close)
+
+	name := fmt.Sprintf("gc_migrate_%d", time.Now().UnixNano())
+	if _, err := admin.Exec(ctx, "CREATE DATABASE "+name); err != nil {
+		t.Fatalf("create isolated database: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = admin.Exec(ctx, "DROP DATABASE "+name+" WITH (FORCE)")
+	})
+
+	parsed, err := url.Parse(base)
+	if err != nil {
+		t.Fatalf("parse test database url: %v", err)
+	}
+	parsed.Path = "/" + name
+
+	pool, err := database.Connect(ctx, database.Options{URL: parsed.String()})
+	if err != nil {
+		t.Fatalf("connect isolated database: %v", err)
 	}
 	t.Cleanup(pool.Close)
 	return pool
@@ -111,7 +150,7 @@ func TestParseMigrations_Errors(t *testing.T) {
 }
 
 func TestUpDownCycle_Integration(t *testing.T) {
-	pool := testPool(t)
+	pool := isolatedPool(t)
 	ctx := context.Background()
 	fsys := os.DirFS("../../migrations")
 
@@ -202,7 +241,7 @@ func TestUpDownCycle_Integration(t *testing.T) {
 }
 
 func TestDown_AtZeroIsNoOp_Integration(t *testing.T) {
-	pool := testPool(t)
+	pool := isolatedPool(t)
 	ctx := context.Background()
 	fsys := os.DirFS("../../migrations")
 
