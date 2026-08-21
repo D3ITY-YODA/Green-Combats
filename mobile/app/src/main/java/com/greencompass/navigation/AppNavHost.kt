@@ -1,5 +1,6 @@
 package com.greencompass.navigation
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,8 +27,8 @@ fun AppNavHost() {
         composable<AppRoute.AccountChoice> {
             AccountChoiceScreen(
                 onPersonal = { navController.navigate(AppRoute.PersonalRegistration) },
-                onOrganization = { /* TODO: Organization Search */ },
-                onInvitation = { /* TODO: Invitation Acceptance */ },
+                onOrganization = { navController.navigate(AppRoute.OrganizationSearch) },
+                onInvitation = { navController.navigate(AppRoute.InvitationAcceptance) },
                 onSignIn = { navController.navigate(AppRoute.PhoneEmailSignIn) }
             )
         }
@@ -35,7 +36,7 @@ fun AppNavHost() {
             PersonalRegistrationScreen(
                 onBack = { navController.popBackStack() },
                 onContinueWithGoogle = { navController.navigate(AppRoute.GoogleSignIn) },
-                onContinue = { navController.navigate(AppRoute.VerificationCode) } // Simplified flow for demo
+                onContinue = { navController.navigate(AppRoute.VerificationCode) }
             )
         }
         composable<AppRoute.GoogleSignIn> {
@@ -61,9 +62,69 @@ fun AppNavHost() {
         composable<AppRoute.VerificationCode> {
             VerificationCodeScreen(
                 onBack = { navController.popBackStack() },
-                onVerify = { /* TODO: Navigate to Location Selection */ },
-                onSendAgain = { /* TODO: Resend logic */ }
+                onVerify = { navController.navigate(AppRoute.LocationSelection) },
+                onSendAgain = { }
             )
         }
+        composable<AppRoute.OrganizationSearch> {
+            OrganizationSearchScreen(
+                onBack = { navController.popBackStack() },
+                onSelectOrganization = { navController.navigate(AppRoute.OrganizationSelection) },
+                onRequestAccess = { navController.navigate(AppRoute.RequestAccess) }
+            )
+        }
+        composable<AppRoute.OrganizationSelection> {
+            OrganizationSelectionScreen(
+                onBack = { navController.popBackStack() },
+                onContinue = { navController.navigate(AppRoute.AccessPending) }
+            )
+        }
+        composable<AppRoute.RequestAccess> {
+            RequestAccessScreen(
+                onBack = { navController.popBackStack() },
+                onRequestSent = { navController.navigate(AppRoute.AccessPending) }
+            )
+        }
+        composable<AppRoute.InvitationAcceptance> {
+            InvitationAcceptanceScreen(
+                onBack = { navController.popBackStack() },
+                onAccept = { navController.navigate(AppRoute.LocationSelection) },
+                onDecline = { navController.popBackStack() }
+            )
+        }
+        composable<AppRoute.AccessPending> {
+            AccessPendingScreen(
+                onBack = { navController.popBackStack() },
+                onViewRequest = { },
+                onReturnToToday = { navController.navigate(AppRoute.Today) }
+            )
+        }
+        composable<AppRoute.LocationSelection> {
+            LocationSelectionScreen(
+                onBack = { navController.popBackStack() },
+                onUseLocation = { navController.navigate(AppRoute.Interests) },
+                onSearchPlace = { navController.navigate(AppRoute.SearchPlace) },
+                onChooseOnMap = { navController.navigate(AppRoute.MapPlaceSelection) },
+                onContinue = { navController.navigate(AppRoute.Interests) }
+            )
+        }
+        composable<AppRoute.SearchPlace> {
+            SearchPlaceScreen(
+                onBack = { navController.popBackStack() },
+                onSelectPlace = { navController.popBackStack(); navController.navigate(AppRoute.Interests) }
+            )
+        }
+        composable<AppRoute.MapPlaceSelection> {
+            MapPlaceSelectionScreen(
+                onBack = { navController.popBackStack() },
+                onConfirmPlace = { navController.popBackStack(); navController.navigate(AppRoute.Interests) }
+            )
+        }
+        // Placeholders for remaining onboarding to prevent compile errors
+        composable<AppRoute.Interests> { Text("Interests Screen") }
+        composable<AppRoute.NotificationPreferences> { Text("Notification Preferences Screen") }
+        composable<AppRoute.PrivacyPermission> { Text("Privacy Permission Screen") }
+        composable<AppRoute.SetupComplete> { Text("Setup Complete Screen") }
+        composable<AppRoute.Today> { Text("Today Screen") }
     }
 }
