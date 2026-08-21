@@ -137,3 +137,217 @@ components:
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
       required: [id, reporter_id, category, description, status, created_at, updated_at]
+
+    # --- Auth & User schemas ---
+
+    UserWithTokens:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            display_name: { type: string }
+            email: { type: string, format: email, nullable: true }
+            phone_number: { type: string, nullable: true }
+            language: { type: string }
+            is_platform_admin: { type: boolean }
+        tokens:
+          $ref: '#/components/schemas/TokenPair'
+
+    TokenPair:
+      type: object
+      properties:
+        access_token: { type: string }
+        refresh_token: { type: string }
+        access_expires_at: { type: string, format: date-time }
+        refresh_expires_at: { type: string, format: date-time }
+      required: [access_token, refresh_token, access_expires_at, refresh_expires_at]
+
+    TokenPairResponse:
+      type: object
+      properties:
+        tokens:
+          $ref: '#/components/schemas/TokenPair'
+
+    UserResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            display_name: { type: string }
+            email: { type: string, format: email, nullable: true }
+            phone_number: { type: string, nullable: true }
+            language: { type: string }
+            is_platform_admin: { type: boolean }
+
+    PaginatedUsers:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              display_name: { type: string }
+              email: { type: string, format: email, nullable: true }
+              phone_number: { type: string, nullable: true }
+
+    # --- Notification schemas ---
+
+    Notification:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        channel: { type: string, enum: [push, sms, ussd, email] }
+        event_type: { type: string }
+        title: { type: string }
+        body: { type: string }
+        metadata: { type: object }
+        status: { type: string, enum: [pending, sent, failed, cancelled] }
+        created_at: { type: string, format: date-time }
+        sent_at: { type: string, format: date-time, nullable: true }
+        error_message: { type: string, nullable: true }
+      required: [id, user_id, channel, event_type, title, body, status, created_at]
+
+    NotificationResponse:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/Notification'
+
+    PaginatedNotifications:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+
+    NotificationPreference:
+      type: object
+      properties:
+        user_id: { type: string, format: uuid }
+        channel: { type: string, enum: [push, sms, ussd, email] }
+        event_type: { type: string }
+        enabled: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    PreferencesResponse:
+      type: object
+      properties:
+        preferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationPreference'
+
+    UpdatePreferenceRequest:
+      type: object
+      required: [channel, event_type, enabled]
+      properties:
+        channel: { type: string, enum: [push, sms, ussd, email] }
+        event_type: { type: string }
+        enabled: { type: boolean }
+
+    # --- Audit schemas ---
+
+    AuditEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        actor_id: { type: string, format: uuid, nullable: true }
+        actor_org_id: { type: string, format: uuid, nullable: true }
+        action: { type: string }
+        resource_type: { type: string }
+        resource_id: { type: string, format: uuid, nullable: true }
+        details: { type: object }
+        ip_address: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+      required: [id, action, resource_type, created_at]
+
+    PaginatedAuditEntries:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEntry'
+
+    # --- Project schemas ---
+
+    Project:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        org_id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [active, archived] }
+        start_date: { type: string, format: date-time, nullable: true }
+        end_date: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, org_id, name, status, created_at, updated_at]
+
+    ProjectResponse:
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+
+    PaginatedProjects:
+      type: object
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+
+    CreateProjectRequest:
+      type: object
+      required: [org_id, name]
+      properties:
+        org_id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        start_date: { type: string, format: date-time }
+        end_date: { type: string, format: date-time }
+
+    UpdateProjectRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [active, archived] }
+
+    # --- Context schema ---
+
+    ContextResponse:
+      type: object
+      properties:
+        primary_place:
+          $ref: '#/components/schemas/PlaceInfo'
+        updates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Update'
+        saved_places:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceInfo'
+
+    # --- Error schema ---
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+        error:
+          $ref: '#/components/schemas/ErrorDetail'

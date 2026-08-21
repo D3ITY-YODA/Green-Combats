@@ -14,13 +14,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"green-compass-backend/internal/audit"
 	gcctx "green-compass-backend/internal/context"
 	"green-compass-backend/internal/auth"
 	"green-compass-backend/internal/config"
 	"green-compass-backend/internal/health"
+	"green-compass-backend/internal/notifications"
 	"green-compass-backend/internal/observations"
 	"green-compass-backend/internal/places"
 	"green-compass-backend/internal/preferences"
+	"green-compass-backend/internal/projects"
+	"green-compass-backend/internal/reporting"
 	"green-compass-backend/internal/reports"
 	"green-compass-backend/internal/updates"
 	"green-compass-backend/internal/users"
@@ -119,6 +123,19 @@ func run() error {
 
 	reportsSvc := reports.NewService(reports.NewRepository(observations.NewRepository(pool)), logger)
 	reports.NewHandler(reportsSvc, authSvc).RegisterRoutes(router)
+
+	notifRepo := notifications.NewRepository(pool)
+	notifSvc := notifications.NewService(notifRepo, logger)
+	notifications.NewHandler(notifSvc).RegisterRoutes(router, auth.Middleware(authSvc))
+
+	auditSvc := audit.NewService(audit.NewRepository(pool))
+	audit.NewHandler(auditSvc).RegisterRoutes(router, auth.Middleware(authSvc))
+
+	projectSvc := projects.NewService(projects.NewRepository(pool))
+	projects.NewHandler(projectSvc).RegisterRoutes(router, auth.Middleware(authSvc))
+
+	reportingSvc := reporting.NewService(reporting.NewRepository(pool))
+	reporting.NewHandler(reportingSvc).RegisterRoutes(router, auth.Middleware(authSvc))
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)),
