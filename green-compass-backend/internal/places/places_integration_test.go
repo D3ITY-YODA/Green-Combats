@@ -52,12 +52,15 @@ func TestRepository_Nearby_Integration(t *testing.T) {
 	pool := testutil.TestPool(t)
 	repo := places.NewRepository(pool)
 	ctx := context.Background()
+	runID := uuid.New()
+	lat := 55.0 + float64(runID[0])/10
+	lon := -150.0 + float64(runID[1])/10
 
 	seed := []places.Place{
-		{Name: uniqueName(t, "Nairobi CBD"), PlaceType: places.TypeCommunity, Lat: -1.2864, Lon: 36.8172},
-		{Name: uniqueName(t, "Kisumu Central"), PlaceType: places.TypeWard, Lat: -0.0917, Lon: 34.7680},
-		{Name: uniqueName(t, "Mombasa Island"), PlaceType: places.TypeDistrict, Lat: -4.0435, Lon: 39.6682},
-		{Name: uniqueName(t, "Someone's Farm"), PlaceType: places.TypeCustom, Lat: -1.2865, Lon: 36.8173},
+		{Name: uniqueName(t, "nearest"), PlaceType: places.TypeCommunity, Lat: lat + 0.005, Lon: lon},
+		{Name: uniqueName(t, "middle"), PlaceType: places.TypeWard, Lat: lat + 0.015, Lon: lon},
+		{Name: uniqueName(t, "farthest"), PlaceType: places.TypeDistrict, Lat: lat + 0.030, Lon: lon},
+		{Name: uniqueName(t, "custom"), PlaceType: places.TypeCustom, Lat: lat + 0.006, Lon: lon},
 	}
 	for i := range seed {
 		if err := repo.Create(ctx, &seed[i]); err != nil {
@@ -66,7 +69,7 @@ func TestRepository_Nearby_Integration(t *testing.T) {
 	}
 
 	t.Run("orders by real distance and excludes custom places", func(t *testing.T) {
-		results, err := repo.Nearby(ctx, -1.2921, 36.8219, 600_000, 100)
+		results, err := repo.Nearby(ctx, lat, lon, 5_000, 100)
 		if err != nil {
 			t.Fatalf("Nearby: %v", err)
 		}
@@ -90,42 +93,42 @@ func TestRepository_Nearby_Integration(t *testing.T) {
 			order = append(order, r.Name)
 		}
 
-		nairobiIdx, kisumuIdx, mombasaIdx := -1, -1, -1
+		nearestIdx, middleIdx, farthestIdx := -1, -1, -1
 		for i, n := range order {
 			switch {
-			case contains(n, "Nairobi CBD"):
-				nairobiIdx = i
-			case contains(n, "Kisumu"):
-				kisumuIdx = i
-			case contains(n, "Mombasa"):
-				mombasaIdx = i
+			case contains(n, "nearest"):
+				nearestIdx = i
+			case contains(n, "middle"):
+				middleIdx = i
+			case contains(n, "farthest"):
+				farthestIdx = i
 			}
 		}
-		if nairobiIdx == -1 || kisumuIdx == -1 || mombasaIdx == -1 {
+		if nearestIdx == -1 || middleIdx == -1 || farthestIdx == -1 {
 			t.Fatalf("missing seeded places in results: %v", order)
 		}
-		if nairobiIdx > kisumuIdx || kisumuIdx > mombasaIdx {
-			t.Errorf("results not ordered by distance from Nairobi: %v", order)
+		if nearestIdx > middleIdx || middleIdx > farthestIdx {
+			t.Errorf("results not ordered by distance: %v", order)
 		}
 	})
 
 	t.Run("radius filter excludes far places", func(t *testing.T) {
-		results, err := repo.Nearby(ctx, -1.2921, 36.8219, 300_000, 100)
+		results, err := repo.Nearby(ctx, lat, lon, 2_000, 100)
 		if err != nil {
 			t.Fatalf("Nearby: %v", err)
 		}
 		for _, r := range results {
-			if contains(r.Name, "Mombasa Island") && seededName(seed, r.Name) {
-				t.Error("Mombasa returned within 300km radius of Nairobi")
+			if contains(r.Name, "farthest") && seededName(seed, r.Name) {
+				t.Error("farthest seeded place returned within 2km radius")
 			}
-			if r.DistanceMeters > 300_000 {
+			if r.DistanceMeters > 2_000 {
 				t.Errorf("%q distance %f exceeds radius", r.Name, r.DistanceMeters)
 			}
 		}
 	})
 
 	t.Run("limit is respected", func(t *testing.T) {
-		results, err := repo.Nearby(ctx, -1.2921, 36.8219, 600_000, 2)
+		results, err := repo.Nearby(ctx, lat, lon, 5_000, 2)
 		if err != nil {
 			t.Fatalf("Nearby: %v", err)
 		}

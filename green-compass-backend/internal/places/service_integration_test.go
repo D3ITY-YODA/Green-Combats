@@ -44,6 +44,7 @@ func newSvcFixture(t *testing.T) *svcFixture {
 	if _, err := pool.Exec(ctx, `UPDATE users SET is_platform_admin = TRUE WHERE id = $1`, admin.UserID); err != nil {
 		t.Fatalf("promote admin: %v", err)
 	}
+	admin.IsPlatformAdmin = true
 
 	return &svcFixture{
 		svc:   svc,
