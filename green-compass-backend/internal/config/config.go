@@ -62,11 +62,19 @@ type Database struct {
 	HealthCheckPeriod Duration `yaml:"health_check_period"`
 }
 
+type Auth struct {
+	Secret          string   `yaml:"secret"`
+	AccessTokenTTL  Duration `yaml:"access_token_ttl"`
+	RefreshTokenTTL Duration `yaml:"refresh_token_ttl"`
+	Issuer          string   `yaml:"issuer"`
+}
+
 type Config struct {
 	AppEnv   string   `yaml:"app_env"`
 	Server   Server   `yaml:"server"`
 	Log      Logging  `yaml:"logging"`
 	Database Database `yaml:"database"`
+	Auth     Auth     `yaml:"auth"`
 }
 
 type LoadOptions struct {
@@ -125,6 +133,12 @@ func Defaults() *Config {
 			ConnMaxIdleTime:   Duration(5 * time.Minute),
 			HealthCheckPeriod: Duration(1 * time.Minute),
 		},
+		Auth: Auth{
+			Secret:          "",
+			AccessTokenTTL:  Duration(15 * time.Minute),
+			RefreshTokenTTL: Duration(30 * 24 * time.Hour),
+			Issuer:          "green-compass",
+		},
 	}
 }
 
@@ -167,6 +181,26 @@ func (c *Config) Validate() []error {
 	}
 	if c.Database.MaxConns > 0 && c.Database.MinConns > c.Database.MaxConns {
 		errs = append(errs, fmt.Errorf("database.min_conns: %d exceeds max_conns %d", c.Database.MinConns, c.Database.MaxConns))
+	}
+
+	if len(c.Auth.Secret) < 32 {
+		switch c.AppEnv {
+		case EnvStaging, EnvProduction:
+			errs = append(errs, fmt.Errorf("auth.secret: must be at least 32 characters in %s, got %d", c.AppEnv, len(c.Auth.Secret)))
+		case EnvLocal, EnvDev:
+		}
+	}
+	if c.Auth.AccessTokenTTL <= 0 {
+		errs = append(errs, fmt.Errorf("auth.access_token_ttl: must be positive, got %s", time.Duration(c.Auth.AccessTokenTTL)))
+	}
+	if c.Auth.RefreshTokenTTL <= 0 {
+		errs = append(errs, fmt.Errorf("auth.refresh_token_ttl: must be positive, got %s", time.Duration(c.Auth.RefreshTokenTTL)))
+	}
+	if c.Auth.RefreshTokenTTL <= c.Auth.AccessTokenTTL {
+		errs = append(errs, fmt.Errorf("auth.refresh_token_ttl: %s must exceed access_token_ttl %s", time.Duration(c.Auth.RefreshTokenTTL), time.Duration(c.Auth.AccessTokenTTL)))
+	}
+	if c.Auth.Issuer == "" {
+		errs = append(errs, fmt.Errorf("auth.issuer: must not be empty"))
 	}
 
 	return errs
@@ -234,6 +268,25 @@ func applyEnvOverrides(cfg *Config, lookup func(string) (string, bool)) error {
 	applyString(&cfg.Log.Format, lookup, "GC_LOG_FORMAT")
 
 	applyString(&cfg.Database.URL, lookup, "GC_DATABASE_URL")
+
+	applyString(&cfg.Auth.Secret, lookup, "GC_AUTH_SECRET")
+	applyString(&cfg.Auth.Issuer, lookup, "GC_AUTH_ISSUER")
+
+	for key, dst := range map[string]*Duration{
+		"GC_AUTH_ACCESS_TTL":  &cfg.Auth.AccessTokenTTL,
+		"GC_AUTH_REFRESH_TTL": &cfg.Auth.RefreshTokenTTL,
+	} {
+		v, ok := lookup(key)
+		if !ok || v == "" {
+			continue
+		}
+		d, err := time.ParseDuration(v)
+		if err != nil || d <= 0 {
+			errs = append(errs, fmt.Errorf("env %s: invalid duration %q", key, v))
+			continue
+		}
+		*dst = Duration(d)
+	}
 
 	if v, ok := lookup("GC_DATABASE_MAX_CONNS"); ok && v != "" {
 		n, err := strconv.Atoi(v)

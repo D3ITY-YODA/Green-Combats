@@ -76,6 +76,8 @@ database:
   conn_max_lifetime: 45m
   conn_max_idle_time: 8m
   health_check_period: 2m
+auth:
+  secret: "staging-secret-0123456789abcdef0123456789abcdef"
 `)
 
 	cfg, err := config.Load(config.LoadOptions{Path: path})
@@ -151,6 +153,64 @@ logging:
 	}
 	if time.Duration(cfg.Database.ConnMaxLifetime) != time.Hour {
 		t.Errorf("Database.ConnMaxLifetime = %s, want env override 1h", time.Duration(cfg.Database.ConnMaxLifetime))
+	}
+}
+
+func TestLoad_AuthSection(t *testing.T) {
+	dir := t.TempDir()
+	path := writeConfig(t, dir, "auth.yaml", `
+app_env: local
+auth:
+  secret: "0123456789abcdef0123456789abcdef"
+  access_token_ttl: 10m
+  refresh_token_ttl: 48h
+  issuer: custom-issuer
+`)
+
+	cfg, err := config.Load(config.LoadOptions{Path: path})
+	if err != nil {
+		t.Fatalf("Load() unexpected error: %v", err)
+	}
+	if cfg.Auth.Secret != "0123456789abcdef0123456789abcdef" {
+		t.Errorf("Auth.Secret = %q, want value from file", cfg.Auth.Secret)
+	}
+	if time.Duration(cfg.Auth.AccessTokenTTL) != 10*time.Minute {
+		t.Errorf("Auth.AccessTokenTTL = %s, want 10m", time.Duration(cfg.Auth.AccessTokenTTL))
+	}
+	if time.Duration(cfg.Auth.RefreshTokenTTL) != 48*time.Hour {
+		t.Errorf("Auth.RefreshTokenTTL = %s, want 48h", time.Duration(cfg.Auth.RefreshTokenTTL))
+	}
+	if cfg.Auth.Issuer != "custom-issuer" {
+		t.Errorf("Auth.Issuer = %q, want custom-issuer", cfg.Auth.Issuer)
+	}
+}
+
+func TestLoad_AuthEnvOverrides(t *testing.T) {
+	dir := t.TempDir()
+	path := writeConfig(t, dir, "base.yaml", "app_env: local\n")
+
+	env := map[string]string{
+		"GC_AUTH_SECRET":      "env-secret-0123456789abcdef0123456789abcdef",
+		"GC_AUTH_ACCESS_TTL":  "5m",
+		"GC_AUTH_REFRESH_TTL": "24h",
+		"GC_AUTH_ISSUER":      "env-issuer",
+	}
+
+	cfg, err := config.Load(config.LoadOptions{Path: path, Lookup: lookupFrom(env)})
+	if err != nil {
+		t.Fatalf("Load() unexpected error: %v", err)
+	}
+	if cfg.Auth.Secret != env["GC_AUTH_SECRET"] {
+		t.Errorf("Auth.Secret = %q, want env override", cfg.Auth.Secret)
+	}
+	if time.Duration(cfg.Auth.AccessTokenTTL) != 5*time.Minute {
+		t.Errorf("Auth.AccessTokenTTL = %s, want env override 5m", time.Duration(cfg.Auth.AccessTokenTTL))
+	}
+	if time.Duration(cfg.Auth.RefreshTokenTTL) != 24*time.Hour {
+		t.Errorf("Auth.RefreshTokenTTL = %s, want env override 24h", time.Duration(cfg.Auth.RefreshTokenTTL))
+	}
+	if cfg.Auth.Issuer != "env-issuer" {
+		t.Errorf("Auth.Issuer = %q, want env override env-issuer", cfg.Auth.Issuer)
 	}
 }
 
@@ -314,6 +374,32 @@ func TestLoad_Errors(t *testing.T) {
 			name:    "negative min conns in file",
 			yaml:    "database:\n  min_conns: -1\n",
 			wantErr: "database.min_conns",
+		},
+		{
+			name:    "empty auth secret in staging",
+			yaml:    "app_env: staging\nauth:\n  secret: \"\"\n",
+			wantErr: "auth.secret",
+		},
+		{
+			name:    "short auth secret in production",
+			yaml:    "app_env: production\nauth:\n  secret: too-short\n",
+			wantErr: "auth.secret",
+		},
+		{
+			name:    "refresh ttl not above access ttl",
+			yaml:    "auth:\n  access_token_ttl: 30m\n  refresh_token_ttl: 15m\n",
+			wantErr: "auth.refresh_token_ttl",
+		},
+		{
+			name:    "empty issuer",
+			yaml:    "auth:\n  issuer: \"\"\n",
+			wantErr: "auth.issuer",
+		},
+		{
+			name:    "bad env auth duration",
+			yaml:    "",
+			env:     map[string]string{"GC_AUTH_ACCESS_TTL": "soon"},
+			wantErr: "GC_AUTH_ACCESS_TTL",
 		},
 	}
 
