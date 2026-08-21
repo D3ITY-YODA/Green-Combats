@@ -14,9 +14,6 @@ export const SubmitReportSchema = z.object({
       "incorrect_information",
       "other",
     ],
-    {
-      required_error: "Please select what you are seeing.",
-    }
   ),
   
   place_id: z.string().uuid("Invalid place selected."),

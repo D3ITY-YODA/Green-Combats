@@ -11,7 +11,7 @@ export default function ConsoleLayout({
   return (
     <div className="min-h-screen bg-mist">
       {/* Persistent left sidebar for organization navigation */}
-      <ConsoleSidebar />
+      <ConsoleSidebar isOpen={true} onClose={() => {}} />
       
       {/* Main content wrapper with left padding on large screens to clear the fixed sidebar */}
       <div className="lg:pl-72">

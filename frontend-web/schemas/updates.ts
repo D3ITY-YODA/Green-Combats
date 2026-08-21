@@ -19,11 +19,8 @@ export const UpdateFormSchema = z.object({
       "emergency",
       "community",
     ],
-    {
-      required_error: "Please select an update type.",
-    }
   ),
-  
+
   title: z
     .string()
     .min(1, "Title is required.")

@@ -51,7 +51,12 @@ const mockTodayData = {
 function renderTodayPage(data: typeof mockTodayData) {
   return render(
     <div>
-      <TodayStatus {...data.status} />
+      <TodayStatus
+          title={data.status.title}
+          message={data.status.message}
+          dataStatus={data.status.data_status}
+          updatedAt={data.status.updated_at}
+        />
       <section>
         {data.updates.map((update) => (
           <UpdateCard key={update.id} update={update} />

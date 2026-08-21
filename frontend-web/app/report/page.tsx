@@ -25,9 +25,15 @@ export default function ReportPage() {
     setIsSubmitting(true);
     try {
       await submitReport({
-        observationType: selectedOption,
-        details: selectedOption === "other" ? details : undefined,
-        location: "Lower Valley", // In a real app, this comes from the user's store
+        type: selectedOption,
+        description: selectedOption === "other" ? details : undefined,
+        place_id: "", // TODO: source from the user's selected place store
+        observed_at: new Date().toISOString(),
+        location: {
+          latitude: -1.29,
+          longitude: 36.82,
+          accuracy_meters: 10,
+        },
       });
       setIsSuccess(true);
     } catch (error) {
