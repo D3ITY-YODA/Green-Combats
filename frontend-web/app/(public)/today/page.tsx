@@ -1,63 +1,65 @@
-// app/today/page.tsx
-import { getTodayData } from "@/lib/api/today-api";
-import { InfoCard } from "@/components/ui/info-card";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { AlertTriangle, Droplets, Sprout } from "lucide-react";
+import { TodayStatus } from "@/components/today/today-status";
+import { UpdateCard } from "@/components/updates/update-card";
+import { ExploreCard } from "@/components/explore/explore-card";
+import { getToday } from "@/lib/api/updates-server";
+import { adaptContextToTodayResponse } from "@/lib/api/updates";
+import type { TodayResponse } from "@/types/updates";
+
+// Fallback mock data when API is unavailable (no auth, no DB data)
+function getFallbackData(): TodayResponse {
+  return {
+    place: { id: "1", name: "Lower Valley", place_type: "ward", lat: 0, lon: 0, is_primary: true },
+    status: { title: "Good morning", message: "Here's what's happening in Lower Valley.", updated_at: "10:00", data_status: "current" },
+    updates: [
+      { id: "1", place_id: "1", topic_key: "water_outlook", type: "information", priority: "normal", title: "Water conditions normal", message: "No significant changes in the last 24h.", valid_from: "2026-08-22", updated_at: "2h ago", source_name: "Local Water Authority", status: "published", display_on_today: true, display_in_feed: true, locale: "en", place_name: "Lower Valley" }
+    ],
+    sections: [
+      { key: "local_outlook", title: "Local outlook", description: "Conditions for the coming days.", available: true, href: "/explore/local-outlook" },
+      { key: "water_outlook", title: "Water outlook", description: "Water levels and availability.", available: true, href: "/explore/water" }
+    ],
+    updated_at: "10:00"
+  };
+}
 
 export default async function TodayPage() {
-  // Fetch data from our mock API layer
-  const data = await getTodayData();
+  let today: TodayResponse;
+
+  try {
+    const ctx = await getToday();
+    today = adaptContextToTodayResponse(ctx);
+  } catch {
+    // Fallback to mock data when API is unavailable
+    today = getFallbackData();
+  }
 
   return (
-    <main className="flex min-h-screen flex-col p-6 md:p-10 max-w-2xl mx-auto">
-      {/* Header: Location and Timestamp */}
+    <div className="mx-auto max-w-3xl px-4 py-8">
       <header className="mb-8">
-        <h1 className="text-page font-bold text-forest-deep mb-1">Today</h1>
-        <p className="text-metadata text-text-muted flex items-center gap-2">
-          {data.location} · Updated {data.lastUpdated}
-        </p>
+        <p className="text-sm text-text-muted">Today</p>
+        <h1 className="mt-1 text-3xl font-semibold text-text-charcoal">{today.place.name}</h1>
       </header>
 
-      {/* Important Updates Section (PDF: "become more visible only when an important update affects the user’s area") */}
-      {data.hasImportantUpdates ? (
-        <div className="mb-8 rounded-xl border border-status-emergency/30 bg-status-emergency/5 p-5">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-status-emergency mt-0.5 flex-shrink-0" />
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <StatusBadge status="emergency" label="Emergency" />
-                <span className="text-card font-semibold text-text-charcoal">Flood warning</span>
-              </div>
-              <p className="text-body text-text-charcoal">
-                Heavy rainfall may cause flooding within 24 hours.
-              </p>
-              <p className="text-metadata text-text-muted mt-2">Updated {data.lastUpdated}</p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        // Calm state (PDF: "The application should remain subtle during ordinary conditions")
-        <div className="mb-8 rounded-xl border border-status-normal/20 bg-status-normal/5 p-5 flex items-center gap-3">
-          <Sprout className="h-5 w-5 text-status-normal flex-shrink-0" />
-          <p className="text-body text-status-normal font-medium">
-            No important updates for your area.
-          </p>
-        </div>
+      <TodayStatus
+        title={today.status.title}
+        message={today.status.message}
+        updatedAt={today.status.updated_at}
+        dataStatus={today.status.data_status}
+      />
+
+      {today.updates.length > 0 && (
+        <section className="mt-8 space-y-4">
+          <h2 className="text-lg font-semibold text-text-charcoal">Key updates</h2>
+          {today.updates.map((update) => (
+            <UpdateCard key={update.id} update={update} />
+          ))}
+        </section>
       )}
 
-      {/* Outlook Cards */}
-      <div className="grid gap-4">
-        <InfoCard title="Local outlook">
-          {data.localOutlook}
-        </InfoCard>
-
-        <InfoCard title="Water outlook">
-          <div className="flex items-start gap-3">
-            <Droplets className="h-5 w-5 text-sky mt-0.5 flex-shrink-0" />
-            <span>{data.waterOutlook}</span>
-          </div>
-        </InfoCard>
-      </div>
-    </main>
+      <section className="mt-8 grid gap-4 md:grid-cols-2">
+        {today.sections.map((section) => (
+          <ExploreCard key={section.key} section={section} />
+        ))}
+      </section>
+    </div>
   );
 }

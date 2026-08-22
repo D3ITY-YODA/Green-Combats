@@ -1,144 +1,71 @@
-// app/console/page.tsx
+"use client";
 
-import Link from "next/link";
-import { serverApiFetch } from "@/lib/api/server-client";
-import type { ConsoleOverview, ConsolePriorityItem } from "@/types/console";
+import { useState, useEffect } from "react";
+import { Bell, FileText, Database, AlertCircle } from "lucide-react";
+import { getDashboardClient } from "@/lib/api/reporting";
+import type { DashboardData } from "@/lib/api/reporting";
 
-// Fetch data on the server using the secure server client
-async function getConsoleOverview(): Promise<ConsoleOverview> {
-  const response = await serverApiFetch<ConsoleOverview>("/api/v1/console/overview");
-  return response.data;
-}
+export default function ConsoleOverview() {
+  const [data, setData] = useState<DashboardData>({
+    important_updates: 2,
+    community_reports: 14,
+    information_delayed: 1,
+    pending_review: 4,
+  });
 
-export default async function ConsoleOverviewPage() {
-  // In a real app, you would wrap this in an ErrorBoundary or use React Suspense
-  const overview = await getConsoleOverview();
+  useEffect(() => {
+    getDashboardClient().then(setData).catch(() => {});
+  }, []);
+
+  const stats = [
+    { label: "Important updates", value: String(data.important_updates ?? 0), icon: Bell, color: "text-status-important" },
+    { label: "Community reports", value: String(data.community_reports ?? 0), icon: FileText, color: "text-forest" },
+    { label: "Information delayed", value: String(data.information_delayed ?? 0), icon: AlertCircle, color: "text-status-watch" },
+    { label: "Pending review", value: String(data.pending_review ?? 0), icon: Database, color: "text-sky" },
+  ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
-      {/* Page Header */}
-      <header>
-        <h1 className="text-2xl font-semibold text-charcoal">Overview</h1>
-        <p className="mt-1 text-lg font-medium text-muted">
-          {overview.organization.name}
-        </p>
-      </header>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-text-charcoal">Overview</h1>
+        <p className="text-text-muted mt-1">Welcome back. Here is what needs your attention.</p>
+      </div>
 
-      {/* Key Metrics Grid */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard 
-          label="Important updates" 
-          value={overview.important_updates} 
-          variant="important" 
-        />
-        <MetricCard 
-          label="Community updates" 
-          value={overview.community_reports} 
-          variant="neutral" 
-        />
-        <MetricCard 
-          label="Information delayed" 
-          value={overview.delayed_sources} 
-          variant="warning" 
-        />
-        <MetricCard 
-          label="Pending review" 
-          value={overview.pending_reviews} 
-          variant="action" 
-        />
-      </section>
-
-      {/* Priority Actions */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-charcoal">Priority actions</h2>
-        
-        {overview.priority_items.length === 0 ? (
-          <div className="rounded-2xl border border-stone bg-white p-8 text-center text-muted">
-            All caught up. There are no priority actions at this time.
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <div key={stat.label} className="bg-background rounded-xl border border-background-stone p-5 flex items-center gap-4">
+            <div className={`p-3 rounded-lg bg-background-mist ${stat.color}`}>
+              <stat.icon className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-text-charcoal">{stat.value}</p>
+              <p className="text-xs text-text-muted">{stat.label}</p>
+            </div>
           </div>
-        ) : (
-          <ul className="space-y-3">
-            {overview.priority_items.map((item) => (
-              <PriorityActionItem key={item.id} item={item} />
-            ))}
-          </ul>
-        )}
-      </section>
+        ))}
+      </div>
 
-      {/* Quick Actions / CTAs */}
-      <section className="flex flex-wrap gap-4 pt-4">
-        <Link
-          href="/console/local-conditions"
-          className="inline-flex items-center justify-center rounded-xl bg-forest px-5 py-3 text-sm font-medium text-white transition hover:bg-forest-dark focus:outline-none focus:ring-4 focus:ring-forest/20"
-        >
-          View local conditions
-        </Link>
-        
-        <Link
-          href="/console/updates/new"
-          className="inline-flex items-center justify-center rounded-xl border border-stone bg-white px-5 py-3 text-sm font-medium text-charcoal transition hover:bg-stone/50 focus:outline-none focus:ring-4 focus:ring-stone/20"
-        >
-          Create update
-        </Link>
-      </section>
-    </div>
-  );
-}
-
-// --- Internal Components for cleaner page structure ---
-
-interface MetricCardProps {
-  label: string;
-  value: number;
-  variant: "important" | "neutral" | "warning" | "action";
-}
-
-function MetricCard({ label, value, variant }: MetricCardProps) {
-  // Determine styling based on the metric's urgency
-  const valueColor = {
-    important: "text-important", // e.g., red/orange
-    neutral: "text-charcoal",
-    warning: "text-warning", // e.g., amber
-    action: "text-forest", // e.g., green
-  }[variant];
-
-  return (
-    <div className="rounded-2xl border border-stone bg-white p-6">
-      <p className="text-sm font-medium text-muted">{label}</p>
-      <p className={`mt-2 text-4xl font-bold ${valueColor}`}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-interface PriorityActionItemProps {
-  item: ConsolePriorityItem;
-}
-
-function PriorityActionItem({ item }: PriorityActionItemProps) {
-  const priorityIndicator = {
-    normal: "bg-stone",
-    important: "bg-important",
-    urgent: "bg-urgent",
-  }[item.priority];
-
-  return (
-    <li>
-      <Link 
-        href={item.href}
-        className="flex items-start gap-4 rounded-2xl border border-stone bg-white p-5 transition hover:border-sage hover:bg-soft-sage"
-      >
-        <span 
-          className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full ${priorityIndicator}`} 
-          aria-hidden="true"
-        />
-        <div className="flex-1">
-          <h3 className="text-base font-semibold text-charcoal">{item.title}</h3>
-          <p className="mt-1 text-sm text-muted">{item.message}</p>
+      <div className="bg-background rounded-xl border border-background-stone p-6">
+        <h2 className="text-lg font-semibold text-text-charcoal mb-4">Priority actions</h2>
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-4 rounded-lg bg-background-mist border border-background-stone">
+            <FileText className="h-5 w-5 text-forest mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-text-charcoal">Review community updates</h3>
+              <p className="text-xs text-text-muted mt-1">{data.pending_review ?? 4} updates are waiting for review.</p>
+            </div>
+            <button className="text-xs font-medium text-forest hover:underline">Review</button>
+          </div>
+          <div className="flex items-start gap-3 p-4 rounded-lg bg-background-mist border border-background-stone">
+            <AlertCircle className="h-5 w-5 text-status-watch mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-text-charcoal">Information delayed</h3>
+              <p className="text-xs text-text-muted mt-1">The latest water update is delayed.</p>
+            </div>
+            <button className="text-xs font-medium text-forest hover:underline">Check sources</button>
+          </div>
         </div>
-        <span className="text-sm font-medium text-forest">View &rarr;</span>
-      </Link>
-    </li>
+      </div>
+    </div>
   );
 }

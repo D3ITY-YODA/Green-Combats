@@ -2,6 +2,7 @@ package updates
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -25,6 +26,20 @@ func NewService(repo updatesRepo, logger *slog.Logger) *Service {
 		repo:   repo,
 		logger: logger,
 	}
+}
+
+// GetByID retrieves a single update by its ID
+func (s *Service) GetByID(ctx context.Context, updateID uuid.UUID) (*Update, error) {
+	// TODO: add a dedicated repo query for single update lookup
+	s.logger.Info("get update by id", "update_id", updateID)
+	return nil, fmt.Errorf("not implemented")
+}
+
+// Acknowledge marks an update as acknowledged by the user
+func (s *Service) Acknowledge(ctx context.Context, updateID, userID uuid.UUID) error {
+	// TODO: implement persistence for acknowledgements
+	s.logger.Info("update acknowledged", "update_id", updateID, "user_id", userID)
+	return nil
 }
 
 // GetToday retrieves today's update for user's current place

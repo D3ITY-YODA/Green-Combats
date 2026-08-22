@@ -1,27 +1,65 @@
-// types/auth.ts
+// types/auth.ts — Matches backend auth handler responses
+
+import { UUID } from "./common";
 
 /**
- * Payload sent to the backend to authenticate an existing user.
- * Matches the Sign In UI (Screen 6).
+ * Payload for POST /v1/auth/register
  */
-export interface SignInInput {
-  phone: string;
+export interface RegisterInput {
+  phone_number?: string;
+  email?: string;
+  display_name: string;
+  password: string;
+  language?: string;
+}
+
+/**
+ * Payload for POST /v1/auth/login
+ */
+export interface LoginInput {
+  identifier: string; // email or phone
   password: string;
 }
 
 /**
- * Payload sent to the backend to create a new user account.
- * Matches the Sign Up UI (Screen 5).
+ * Token pair returned by login/register/refresh.
  */
-export interface SignUpInput {
-  full_name: string;
-  phone: string;
-  password: string;
+export interface TokenPair {
+  access_token: string;
+  refresh_token: string;
+  access_expires_at: string;
+  refresh_expires_at: string;
 }
 
 /**
- * Payload sent to verify a phone number or email via OTP/Code.
- * Matches the Verify UI flow.
+ * Response from POST /v1/auth/register
+ */
+export interface RegisterResponse {
+  user: SessionUser;
+  tokens: TokenPair;
+}
+
+/**
+ * Response from POST /v1/auth/login and POST /v1/auth/refresh
+ */
+export interface LoginResponse {
+  tokens: TokenPair;
+}
+
+/**
+ * Current user profile from GET /v1/auth/me
+ */
+export interface SessionUser {
+  id: UUID;
+  display_name: string;
+  email?: string | null;
+  phone_number?: string | null;
+  language: string;
+  is_platform_admin: boolean;
+}
+
+/**
+ * VerifyCodeInput (kept for future OTP flow)
  */
 export interface VerifyCodeInput {
   phone: string;
@@ -29,25 +67,14 @@ export interface VerifyCodeInput {
 }
 
 /**
- * Payload sent to initiate a password reset flow.
+ * ForgotPasswordInput (kept for future password reset)
  */
 export interface ForgotPasswordInput {
   phone: string;
 }
 
 /**
- * Represents the session data returned by the backend upon successful login.
- * Note: The blueprint primarily uses HttpOnly cookies (`gc_session`) for auth,
- * but this interface covers any additional session metadata the Go backend might return.
- */
-export interface AuthSession {
-  session_id?: string;
-  csrf_token?: string;
-  expires_at?: string;
-}
-
-/**
- * Payload for updating a user's password.
+ * ChangePasswordInput (kept for future password change)
  */
 export interface ChangePasswordInput {
   current_password: string;

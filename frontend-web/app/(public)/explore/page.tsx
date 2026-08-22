@@ -1,57 +1,53 @@
-// app/explore/page.tsx
-import { getExploreSections } from "@/lib/api/explore-api";
-import { InfoCard } from "@/components/ui/info-card";
-import { Sprout, Droplets, Calendar, Users, Shield } from "lucide-react";
+import { ExploreCard } from "@/components/explore/explore-card";
+import { getExploreIndicators } from "@/lib/api/updates-server";
+import { adaptExploreToTopicSections } from "@/lib/api/updates";
+import type { TopicSection } from "@/types/common";
 
-// Helper to map the mock API icon strings to actual Lucide icons
-const iconMap = {
-  local: Sprout,
-  water: Droplets,
-  seasonal: Calendar,
-  community: Users,
-  preparedness: Shield,
-};
+// Fallback mock data
+function getFallbackSections(): TopicSection[] {
+  return [
+    { key: "local_outlook", title: "Local outlook", description: "Overview of current conditions.", available: true, href: "/explore/local-outlook" },
+    { key: "water_outlook", title: "Water outlook", description: "Water levels, availability and quality.", available: true, href: "/explore/water" },
+    { key: "seasonal_information", title: "Seasonal information", description: "What to expect in the coming months.", available: true, href: "/explore/seasonal" },
+    { key: "community_updates", title: "Community updates", description: "Reports from your neighbors.", available: true, href: "/explore/community" }
+  ];
+}
 
 export default async function ExplorePage() {
-  // Fetch the relevant sections from our mock API
-  const sections = await getExploreSections();
+  let sections: TopicSection[];
+  let placeName = "Lower Valley";
+
+  try {
+    const result = await getExploreIndicators({ limit: 50 });
+    sections = adaptExploreToTopicSections(result.indicators);
+    // Use the first indicator's place name if available
+    if (result.indicators.length > 0 && result.indicators[0].place_name) {
+      placeName = result.indicators[0].place_name;
+    }
+  } catch {
+    sections = getFallbackSections();
+  }
+
+  // Always ensure at least the core sections are available
+  const fallbackSections = getFallbackSections();
+  for (const fb of fallbackSections) {
+    if (!sections.find(s => s.key === fb.key)) {
+      sections.push(fb);
+    }
+  }
 
   return (
-    <main className="flex min-h-screen flex-col p-6 md:p-10 max-w-4xl mx-auto">
-      {/* Header */}
+    <div className="mx-auto max-w-4xl px-4 py-8">
       <header className="mb-8">
-        <h1 className="text-page font-bold text-forest-deep mb-1">Explore</h1>
-        <p className="text-metadata text-text-muted">
-          Relevant information for your area
-        </p>
+        <p className="text-sm text-text-muted">Explore</p>
+        <h1 className="mt-1 text-3xl font-semibold text-text-charcoal">{placeName}</h1>
+        <p className="mt-3 text-text-muted">Information relevant to your selected place.</p>
       </header>
-
-      {/* Grid of Relevant Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {sections.map((section) => {
-          const IconComponent = iconMap[section.icon] || Sprout;
-          
-          return (
-            <InfoCard key={section.id} title={section.title} className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <IconComponent className="h-5 w-5 text-forest" />
-                <p className="text-body text-text-charcoal leading-relaxed">
-                  {section.description}
-                </p>
-              </div>
-            </InfoCard>
-          );
-        })}
+      <div className="grid gap-4 md:grid-cols-2">
+        {sections.map((section) => (
+          <ExploreCard key={section.key} section={section} />
+        ))}
       </div>
-
-      {/* Empty State (PDF: "Users do not see features that are irrelevant") */}
-      {sections.length === 0 && (
-        <div className="rounded-xl border border-background-stone bg-background-mist p-8 text-center">
-          <p className="text-body text-text-muted">
-            No additional information is currently available for your selected location.
-          </p>
-        </div>
-      )}
-    </main>
+    </div>
   );
 }

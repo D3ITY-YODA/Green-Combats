@@ -1,13 +1,10 @@
 package httpx
 
-import (
-	"math"
-)
-
 // PaginationParams holds request pagination parameters
 type PaginationParams struct {
 	Page     int
 	PageSize int
+	Limit    int // Alias for PageSize — callers may use either
 }
 
 // ValidatePagination ensures pagination parameters are within bounds
@@ -31,6 +28,7 @@ func ValidatePagination(page, pageSize int) PaginationParams {
 	return PaginationParams{
 		Page:     page,
 		PageSize: pageSize,
+		Limit:    pageSize,
 	}
 }
 
