@@ -9,7 +9,7 @@ async function getTodayData(): Promise<TodayResponse> {
     place: { id: "1", name: "Lower Valley", type: "ward", country_code: "KE" },
     status: { title: "Good morning", message: "Here's what's happening in Lower Valley.", updated_at: "10:00", data_status: "current" },
     updates: [
-      { id: "1", place_id: "1", topic_key: "water_outlook", type: "information", priority: "normal", title: "Water conditions normal", message: "No significant changes in the last 24h.", updated_at: "2h ago", source_name: "Local Water Authority", status: "published", display_on_today: true, display_in_feed: true, locale: "en", place_name: "Lower Valley" }
+      { id: "1", place_id: "1", topic_key: "water_outlook", type: "information", priority: "normal", title: "Water conditions normal", message: "No significant changes in the last 24h.", valid_from: "2026-08-22", updated_at: "2h ago", source_name: "Local Water Authority", status: "published", display_on_today: true, display_in_feed: true, locale: "en", place_name: "Lower Valley" }
     ],
     sections: [
       { key: "local_outlook", title: "Local outlook", description: "Conditions for the coming days.", available: true, href: "/explore/local-outlook" },
@@ -29,7 +29,12 @@ export default async function TodayPage() {
         <h1 className="mt-1 text-3xl font-semibold text-text-charcoal">{today.place.name}</h1>
       </header>
 
-      <TodayStatus {...today.status} />
+      <TodayStatus
+        title={today.status.title}
+        message={today.status.message}
+        updatedAt={today.status.updated_at}
+        dataStatus={today.status.data_status}
+      />
 
       {today.updates.length > 0 && (
         <section className="mt-8 space-y-4">
