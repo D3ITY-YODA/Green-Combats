@@ -1,21 +1,23 @@
-# render.yaml — Green Compass full-stack deployment blueprint
+# render.yaml — Green Compass single-container deployment
 #
-# Deploy steps:
-#   1. Push this file to your repo
-#   2. Go to https://dashboard.render.com → New → Blueprint
-#   3. Connect your GitHub repo (D3ITY-YODA/Green-Combats)
-#   4. Render detects this file and creates all 3 services
-#   5. After first deploy, shell into greencompass-api and run:
-#      /usr/local/bin/migrate up
-#      (migrations also run automatically on each deploy/restart)
+# Builds both backend + frontend from the root Dockerfile.
+# External traffic hits the frontend on :3000.
+# Backend runs internally on :8080.
+#
+# Deploy:
+#   1. Push to repo
+#   2. Render Dashboard → New → Blueprint → connect repo
+#   3. Render detects render.yaml and creates services
+#   4. Seed DB after first deploy (shell into service, run: /usr/local/bin/api seed)
 
 services:
-  # ── Go Backend API ──────────────────────────────────────────────
+  # ── Green Compass (backend + frontend in one container) ──────────
   - type: web
-    name: greencompass-api
-    dockerfilePath: ./green-compass-backend/Dockerfile
-    dockerContext: ./green-compass-backend
+    name: greencompass
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
+      # Backend config
       - key: GC_APP_ENV
         value: production
       - key: GC_SERVER_HOST
@@ -34,23 +36,16 @@ services:
         generateValue: true
       - key: GC_AUTH_ISSUER
         value: green-compass
-    healthCheckPath: /healthz
-    autoDeploy: true
-
-  # ── Next.js Frontend ────────────────────────────────────────────
-  - type: web
-    name: greencompass-web
-    dockerfilePath: ./frontend-web/Dockerfile
-    dockerContext: ./frontend-web
-    envVars:
+      # Frontend config
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_APP_NAME
         value: Green Compass
       - key: NEXT_PUBLIC_API_URL
-        value: https://greencompass-api.onrender.com
+        value: http://localhost:8080
       - key: NEXT_PUBLIC_DEFAULT_LOCALE
         value: en
+    healthCheckPath: /healthz
     autoDeploy: true
 
 databases:
