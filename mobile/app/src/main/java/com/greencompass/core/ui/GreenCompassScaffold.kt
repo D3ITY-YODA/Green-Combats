@@ -32,10 +32,9 @@ fun GreenCompassScaffold(
         },
         containerColor = Color.White,
         contentColor = GreenCompassColors.Charcoal
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            content(paddingValues)
-        }
+    ) { innerPadding ->
+        // FIX: We pass innerPadding directly to the content ONCE. No extra wrapping Box.
+        content(innerPadding)
     }
 }
 

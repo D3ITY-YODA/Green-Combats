@@ -1,15 +1,22 @@
 package com.greencompass.feature.explore
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,7 +44,7 @@ fun ExploreScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = AppSpacing.lg)
+                .padding(start = AppSpacing.lg, end = AppSpacing.lg, top = AppSpacing.sm, bottom = AppSpacing.lg)
         ) {
             Text(
                 text = "Information relevant to your selected place.",
@@ -47,12 +54,12 @@ fun ExploreScreen(
             )
 
             val topics = listOf(
-                ExploreTopic("local", "Local outlook", "Conditions for the coming days", Icons.Outlined.WbSunny, AppRoute.LocalOutlook),
-                ExploreTopic("seasonal", "Seasonal information", "Changes that may affect your area", Icons.Outlined.CalendarToday, AppRoute.SeasonalInformation),
-                ExploreTopic("water", "Water outlook", "Information about nearby water conditions", Icons.Outlined.WaterDrop, AppRoute.WaterOutlook),
-                ExploreTopic("land", "Land and ecosystems", "Changes in the surrounding environment", Icons.Outlined.Landscape, AppRoute.LandEcosystems),
-                ExploreTopic("food", "Food and agriculture", "Information relevant to the current season", Icons.Outlined.Agriculture, AppRoute.FoodAgriculture),
-                ExploreTopic("community", "Community updates", "Information shared by people nearby", Icons.Outlined.People, AppRoute.CommunityUpdates)
+                ExploreTopic("local", "Local outlook", "Conditions for the coming days", Icons.Filled.Info, AppRoute.LocalOutlook),
+                ExploreTopic("seasonal", "Seasonal information", "Changes that may affect your area", Icons.Filled.DateRange, AppRoute.SeasonalInformation),
+                ExploreTopic("water", "Water outlook", "Information about nearby water conditions", Icons.Filled.Place, AppRoute.WaterOutlook),
+                ExploreTopic("land", "Land and ecosystems", "Changes in the surrounding environment", Icons.Filled.Place, AppRoute.LandEcosystems),
+                ExploreTopic("food", "Food and agriculture", "Information relevant to the current season", Icons.Filled.Star, AppRoute.FoodAgriculture),
+                ExploreTopic("community", "Community updates", "Information shared by people nearby", Icons.Filled.Person, AppRoute.CommunityUpdates)
             )
 
             LazyVerticalGrid(
@@ -86,12 +93,19 @@ private fun ExploreTopicCard(topic: ExploreTopic, onClick: () -> Unit) {
             modifier = Modifier.padding(AppSpacing.md).fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
-                imageVector = topic.icon,
-                contentDescription = null,
-                tint = GreenCompassColors.ForestGreen,
-                modifier = Modifier.size(32.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(GreenCompassColors.SoftSage, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = topic.icon,
+                    contentDescription = null,
+                    tint = GreenCompassColors.ForestGreen,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
             Column {
                 Text(text = topic.title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal)
                 Spacer(modifier = Modifier.height(AppSpacing.xxs))

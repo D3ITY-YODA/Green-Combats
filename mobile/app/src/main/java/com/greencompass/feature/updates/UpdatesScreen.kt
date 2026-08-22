@@ -31,13 +31,18 @@ fun UpdatesScreen(
         placeName = state.data?.placeName ?: "Lower Valley"
     ) { paddingValues ->
         if (state.isLoading) {
-            Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(AppSpacing.lg)) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(start = AppSpacing.lg, end = AppSpacing.lg, top = AppSpacing.sm, bottom = AppSpacing.lg)) {
                 repeat(3) { LoadingSkeleton(modifier = Modifier.fillMaxWidth().height(100.dp).padding(bottom = AppSpacing.md)) }
             }
         } else {
             val currentData = state.data
             if (currentData != null) {
-                UpdatesContent(data = currentData, modifier = Modifier.padding(paddingValues), onNavigate = onNavigate)
+                UpdatesContent(data = currentData, modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(start = AppSpacing.lg, end = AppSpacing.lg, top = AppSpacing.sm, bottom = AppSpacing.lg), onNavigate = onNavigate)
             }
         }
     }
@@ -46,7 +51,7 @@ fun UpdatesScreen(
 @Composable
 private fun UpdatesContent(data: TodayData, modifier: Modifier = Modifier, onNavigate: (AppRoute) -> Unit) {
     LazyColumn(
-        modifier = modifier.fillMaxSize().padding(AppSpacing.lg),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(AppSpacing.md)
     ) {
         if (data.updates.isEmpty()) {

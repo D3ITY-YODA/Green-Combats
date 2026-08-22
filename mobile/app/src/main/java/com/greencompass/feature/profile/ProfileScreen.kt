@@ -18,9 +18,7 @@ import com.greencompass.navigation.AppRoute
 data class ProfileMenuItem(val title: String, val subtitle: String, val icon: ImageVector)
 
 @Composable
-fun ProfileScreen(
-    onNavigate: (AppRoute) -> Unit
-) {
+fun ProfileScreen(onNavigate: (AppRoute) -> Unit) {
     val menuItems = listOf(
         ProfileMenuItem("Your places", "Manage the places you follow", Icons.Outlined.Place),
         ProfileMenuItem("Updates", "Choose how you receive information", Icons.Outlined.Notifications),
@@ -32,9 +30,19 @@ fun ProfileScreen(
     )
 
     GreenCompassScaffold(title = "Profile") { paddingValues ->
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            // FIX: Use contentPadding for LazyColumn. This perfectly clears the TopAppBar.
+            contentPadding = paddingValues,
+            verticalArrangement = Arrangement.spacedBy(0.dp)
+        ) {
             item {
-                Column(modifier = Modifier.fillMaxWidth().padding(AppSpacing.lg)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = AppSpacing.lg)
+                        .padding(top = AppSpacing.md, bottom = AppSpacing.md)
+                ) {
                     Text(text = "Amina Njeri", style = GreenCompassTypography.headlineLarge, color = GreenCompassColors.Charcoal, modifier = Modifier.padding(bottom = AppSpacing.xs))
                     Text(text = "Personal account", style = GreenCompassTypography.bodyMedium, color = GreenCompassColors.MutedText)
                 }
@@ -43,35 +51,37 @@ fun ProfileScreen(
 
             items(menuItems.size) { index ->
                 val item = menuItems[index]
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = AppSpacing.lg, vertical = AppSpacing.md)
-                        .clickable {
-                            when (item.title) {
-                                "Your places" -> onNavigate(AppRoute.Places)
-                                "Updates" -> onNavigate(AppRoute.NotificationSettings)
-                                "Language" -> onNavigate(AppRoute.LanguageSettings)
-                                "Accessibility" -> onNavigate(AppRoute.AccessibilitySettings)
-                                "Privacy" -> onNavigate(AppRoute.PrivacySettings)
-                                "Organizations" -> onNavigate(AppRoute.Organizations)
-                                "Help" -> onNavigate(AppRoute.Help)
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                when (item.title) {
+                                    "Your places" -> onNavigate(AppRoute.Places)
+                                    "Updates" -> onNavigate(AppRoute.NotificationSettings)
+                                    "Language" -> onNavigate(AppRoute.LanguageSettings)
+                                    "Accessibility" -> onNavigate(AppRoute.AccessibilitySettings)
+                                    "Privacy" -> onNavigate(AppRoute.PrivacySettings)
+                                    "Organizations" -> onNavigate(AppRoute.Organizations)
+                                    "Help" -> onNavigate(AppRoute.Help)
+                                }
                             }
-                        },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(item.icon, contentDescription = null, tint = GreenCompassColors.Charcoal, modifier = Modifier.size(24.dp))
-                    Spacer(Modifier.width(AppSpacing.md))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = item.title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal)
-                        if (item.subtitle.isNotEmpty()) {
-                            Text(text = item.subtitle, style = GreenCompassTypography.bodySmall, color = GreenCompassColors.MutedText)
+                            .padding(horizontal = AppSpacing.lg, vertical = AppSpacing.md),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(item.icon, contentDescription = null, tint = GreenCompassColors.Charcoal, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(AppSpacing.md))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = item.title, style = GreenCompassTypography.titleMedium, color = GreenCompassColors.Charcoal)
+                            if (item.subtitle.isNotEmpty()) {
+                                Text(text = item.subtitle, style = GreenCompassTypography.bodySmall, color = GreenCompassColors.MutedText)
+                            }
                         }
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = GreenCompassColors.MutedText)
                     }
-                    Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = GreenCompassColors.MutedText)
-                }
-                if (index < menuItems.size - 1) {
-                    Divider(modifier = Modifier.padding(horizontal = AppSpacing.lg), color = GreenCompassColors.Stone)
+                    if (index < menuItems.size - 1) {
+                        Divider(modifier = Modifier.padding(horizontal = AppSpacing.lg), color = GreenCompassColors.Stone)
+                    }
                 }
             }
 

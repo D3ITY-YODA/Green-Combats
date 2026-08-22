@@ -27,7 +27,10 @@ fun ReportScreen(onSelectType: (String) -> Unit) {
 
     GreenCompassScaffold(title = "Report") { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = AppSpacing.lg)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(start = AppSpacing.lg, end = AppSpacing.lg, top = AppSpacing.sm, bottom = AppSpacing.lg)
         ) {
             Text(text = "Share what you are seeing\nin your area.", style = GreenCompassTypography.bodyLarge, color = GreenCompassColors.MutedText, modifier = Modifier.padding(bottom = AppSpacing.xl))
             

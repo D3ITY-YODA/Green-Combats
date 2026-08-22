@@ -46,7 +46,9 @@ fun TodayScreen(state: TodayUiState, onRetry: () -> Unit) {
             }
 
             if (state.isLoading) {
-                Column(modifier = Modifier.fillMaxSize().padding(AppSpacing.lg)) {
+                Column(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = AppSpacing.lg, end = AppSpacing.lg, top = AppSpacing.sm, bottom = AppSpacing.lg)) {
                     LoadingSkeleton(modifier = Modifier.fillMaxWidth().height(120.dp))
                     Spacer(Modifier.height(AppSpacing.md))
                     LoadingSkeleton(modifier = Modifier.fillMaxWidth().height(80.dp))
@@ -61,7 +63,9 @@ fun TodayScreen(state: TodayUiState, onRetry: () -> Unit) {
 @Composable
 private fun TodayContent(data: TodayData, isOffline: Boolean, onRetry: () -> Unit) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(AppSpacing.lg),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = AppSpacing.lg, end = AppSpacing.lg, top = AppSpacing.sm, bottom = AppSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(AppSpacing.md)
     ) {
         item {
@@ -172,7 +176,6 @@ private fun ImportantUpdateCard(update: com.greencompass.domain.model.PublicUpda
     }
 }
 
-// Map section keys to high-contrast Core icons
 private fun getIconForSection(key: String) = when (key) {
     "local" -> Icons.Filled.Info
     "seasonal" -> Icons.Filled.DateRange
@@ -191,7 +194,6 @@ private fun ExploreCard(section: ExploreSection) {
         border = androidx.compose.foundation.BorderStroke(1.dp, GreenCompassColors.Stone)
     ) {
         Row(modifier = Modifier.padding(AppSpacing.lg).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            // High contrast background for the icon
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -201,7 +203,7 @@ private fun ExploreCard(section: ExploreSection) {
                 Icon(
                     imageVector = getIconForSection(section.key),
                     contentDescription = null,
-                    tint = GreenCompassColors.ForestGreen, // Dark green on light green = PERFECT CONTRAST
+                    tint = GreenCompassColors.ForestGreen,
                     modifier = Modifier.size(24.dp)
                 )
             }
