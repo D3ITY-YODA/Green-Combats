@@ -4,22 +4,15 @@
 #   1. Push this file to your repo
 #   2. Go to https://dashboard.render.com → New → Blueprint
 #   3. Connect your GitHub repo (D3ITY-YODA/Green-Combats)
-#   4. Render will detect this render.yaml and create all services
-#   5. After first deploy, seed the database:
-#      → Shell into backend service → run: /usr/local/bin/api (starts migrations on boot)
-#
-# Architecture:
-#   - greencompass-db:    Managed PostgreSQL with PostGIS
-#   - greencompass-api:   Go backend (Docker) — runs migrations on startup
-#   - greencompass-web:   Next.js frontend (Docker) — connects to backend
+#   4. Render detects this file and creates all 3 services
+#   5. After first deploy, shell into greencompass-api and run:
+#      /usr/local/bin/migrate up
+#      (migrations also run automatically on each deploy/restart)
 
 services:
   # ── Go Backend API ──────────────────────────────────────────────
   - type: web
     name: greencompass-api
-    runtime: image
-    image:
-      url: # Render builds from Dockerfile
     dockerfilePath: ./green-compass-backend/Dockerfile
     dockerContext: ./green-compass-backend
     envVars:
@@ -47,9 +40,6 @@ services:
   # ── Next.js Frontend ────────────────────────────────────────────
   - type: web
     name: greencompass-web
-    runtime: image
-    image:
-      url: # Render builds from Dockerfile
     dockerfilePath: ./frontend-web/Dockerfile
     dockerContext: ./frontend-web
     envVars:
@@ -58,7 +48,7 @@ services:
       - key: NEXT_PUBLIC_APP_NAME
         value: Green Compass
       - key: NEXT_PUBLIC_API_URL
-        service: greencompass-api  # Render auto-resolves to the backend's internal URL
+        value: https://greencompass-api.onrender.com
       - key: NEXT_PUBLIC_DEFAULT_LOCALE
         value: en
     autoDeploy: true
@@ -67,4 +57,4 @@ databases:
   - name: greencompass-db
     plan: starter
     databaseName: greencompass
-    ipAllowList: []  # Only internal Render services can connect (secure by default)
+    ipAllowList: []
