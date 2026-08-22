@@ -29,8 +29,8 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, authMiddleware gin.HandlerF
 	group := router.Group("/v1")
 	group.Use(authMiddleware)
 	group.GET("/context/today", h.GetToday)                    // legacy
-	group.GET("/places/:place_id/today", h.GetTodayByPlace)   // spec: /places/{placeID}/today
-	group.GET("/places/:place_id/context", h.GetContext)      // spec: /places/{placeID}/context
+	group.GET("/places/:id/today", h.GetTodayByPlace)   // spec: /places/{placeID}/today
+	group.GET("/places/:id/context", h.GetContext)      // spec: /places/{placeID}/context
 }
 
 // GetToday resolves the user's current context and returns today's content
@@ -86,7 +86,7 @@ func (h *Handler) GetTodayByPlace(c *gin.Context) {
 		return
 	}
 
-	placeIDStr := c.Param("place_id")
+	placeIDStr := c.Param("id")
 	placeID, err := uuid.Parse(placeIDStr)
 	if err != nil {
 		httpx.HandleError(c, httpx.InvalidParam("place_id", "must be a valid UUID"))
@@ -127,7 +127,7 @@ func (h *Handler) GetContext(c *gin.Context) {
 		return
 	}
 
-	placeIDStr := c.Param("place_id")
+	placeIDStr := c.Param("id")
 	placeID, err := uuid.Parse(placeIDStr)
 	if err != nil {
 		httpx.HandleError(c, httpx.InvalidParam("place_id", "must be a valid UUID"))
