@@ -36,13 +36,13 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, authMiddleware gin.HandlerF
 	group.POST("/updates/:update_id/acknowledge", h.AcknowledgeUpdate)
 
 	group.GET("/explore", h.ExploreIndicators)
-	group.GET("/places/:place_id/explore", h.ExploreByPlace)
-	group.GET("/places/:place_id/local-outlook", h.LocalOutlook)
-	group.GET("/places/:place_id/seasonal", h.Seasonal)
-	group.GET("/places/:place_id/water", h.Water)
-	group.GET("/places/:place_id/land-ecosystems", h.LandEcosystems)
-	group.GET("/places/:place_id/food-agriculture", h.FoodAgriculture)
-	group.GET("/places/:place_id/community", h.Community)
+	group.GET("/places/:id/explore", h.ExploreByPlace)
+	group.GET("/places/:id/local-outlook", h.LocalOutlook)
+	group.GET("/places/:id/seasonal", h.Seasonal)
+	group.GET("/places/:id/water", h.Water)
+	group.GET("/places/:id/land-ecosystems", h.LandEcosystems)
+	group.GET("/places/:id/food-agriculture", h.FoodAgriculture)
+	group.GET("/places/:id/community", h.Community)
 }
 
 // ListUpdates retrieves paginated updates for user's saved places
@@ -156,8 +156,7 @@ func (h *Handler) ExploreIndicators(c *gin.Context) {
 // GetUpdate returns a single update by ID
 // GET /v1/updates/{update_id}
 func (h *Handler) GetUpdate(c *gin.Context) {
-	identity, ok := auth.IdentityFrom(c.Request.Context())
-	if !ok {
+	if _, ok := auth.IdentityFrom(c.Request.Context()); !ok {
 		httpx.HandleError(c, httpx.ErrUnauthorized)
 		return
 	}
@@ -213,7 +212,7 @@ func (h *Handler) ExploreByPlace(c *gin.Context) {
 		return
 	}
 
-	placeIDStr := c.Param("place_id")
+	placeIDStr := c.Param("id")
 	placeID, err := uuid.Parse(placeIDStr)
 	if err != nil {
 		httpx.HandleError(c, httpx.InvalidParam("place_id", "must be a valid UUID"))
@@ -302,7 +301,7 @@ func (h *Handler) exploreByTopic(c *gin.Context, topicKey string) {
 		return
 	}
 
-	placeIDStr := c.Param("place_id")
+	placeIDStr := c.Param("id")
 	placeID, err := uuid.Parse(placeIDStr)
 	if err != nil {
 		httpx.HandleError(c, httpx.InvalidParam("place_id", "must be a valid UUID"))
