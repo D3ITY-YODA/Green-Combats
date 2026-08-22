@@ -2,7 +2,6 @@ package httpx
 
 import (
 	"time"
-	"github.com/google/uuid"
 )
 
 type Envelope struct {
@@ -31,23 +30,33 @@ type ErrorDetail struct {
 	Details   map[string]interface{} `json:"details,omitempty"`
 }
 
-// Success returns a successful response envelope
-func Success(data interface{}, requestID string) *Envelope {
+// Success returns a successful response envelope.
+// An optional requestID can be passed as a trailing argument.
+func Success(data interface{}, args ...string) *Envelope {
+	var rid string
+	if len(args) > 0 {
+		rid = args[0]
+	}
 	return &Envelope{
 		Data: data,
 		Meta: &Meta{
-			RequestID: requestID,
+			RequestID: rid,
 			Timestamp: time.Now().UTC(),
 		},
 	}
 }
 
-// SuccessWithPagination returns a paginated response envelope
-func SuccessWithPagination(data interface{}, pagination *PaginationMeta, requestID string) *Envelope {
+// SuccessWithPagination returns a paginated response envelope.
+// An optional requestID can be passed as a trailing argument.
+func SuccessWithPagination(data interface{}, pagination *PaginationMeta, args ...string) *Envelope {
+	var rid string
+	if len(args) > 0 {
+		rid = args[0]
+	}
 	return &Envelope{
 		Data: data,
 		Meta: &Meta{
-			RequestID:  requestID,
+			RequestID:  rid,
 			Pagination: pagination,
 			Timestamp:  time.Now().UTC(),
 		},
