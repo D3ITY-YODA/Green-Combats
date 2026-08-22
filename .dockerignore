@@ -1,0 +1,13 @@
+# Root .dockerignore — exclude files that aren't needed in the build
+.git
+.github
+*.md
+docker-compose.yml
+render.yaml.bak
+package-lock.json.bak
+mobile/
+frontend-web/node_modules/
+frontend-web/.next/
+frontend-web/.env
+green-compass-backend/vendor/
+.env*
