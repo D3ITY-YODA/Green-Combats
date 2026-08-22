@@ -7,6 +7,12 @@ server:
   write_timeout: 10s
   idle_timeout: 120s
   shutdown_timeout: 30s
+  # Origins allowed to call this API from the browser (comma-separated).
+  # On Render this is set via GC_CORS_ALLOWED_ORIGINS to the web service URL.
+  cors_allowed_origins: []
+  cors_allow_credentials: true
+  # Apply pending migrations on startup so no separate migrate step is required.
+  run_migrations: true
 
 logging:
   level: info

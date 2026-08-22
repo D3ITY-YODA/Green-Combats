@@ -3,6 +3,8 @@ import { getExploreIndicators } from "@/lib/api/updates-server";
 import { adaptExploreToTopicSections } from "@/lib/api/updates";
 import type { TopicSection } from "@/types/common";
 
+export const dynamic = "force-dynamic";
+
 // Fallback mock data
 function getFallbackSections(): TopicSection[] {
   return [

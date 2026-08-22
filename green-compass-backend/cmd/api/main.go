@@ -12,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"green-compass-backend/internal/audit"
@@ -29,6 +28,8 @@ import (
 	"green-compass-backend/internal/reports"
 	"green-compass-backend/internal/updates"
 	"green-compass-backend/internal/users"
+	"green-compass-backend/internal/migrate"
+	"green-compass-backend/migrations"
 	"green-compass-backend/pkg/clock"
 	"green-compass-backend/pkg/database"
 	"green-compass-backend/pkg/httpx"
@@ -88,6 +89,15 @@ func run() error {
 	}
 	defer pool.Close()
 
+	if cfg.Server.RunMigrations {
+		logger.Info("running database migrations")
+		applied, err := migrate.Up(ctx, pool, migrations.FS, 0)
+		if err != nil {
+			return fmt.Errorf("run migrations: %w", err)
+		}
+		logger.Info("database migrations complete", "applied", len(applied))
+	}
+
 	userSvc := users.NewService(users.NewRepository(pool))
 	authRepo := auth.NewRepository(pool)
 	authSvc, err := auth.NewService(userSvc, authRepo, clock.New(), auth.Options{
@@ -100,15 +110,19 @@ func run() error {
 		return fmt.Errorf("init auth service: %w", err)
 	}
 	router := gin.New()
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://green-combats-frontend.onrender.com", "http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * 60 * 60,
-	}))
-	router.Use(gin.Recovery(), httpx.RequestLogger(logger, clock.New()), httpx.RequestIDMiddleware())
+	router.Use(
+		gin.Recovery(),
+		httpx.RequestLogger(logger, clock.New()),
+		httpx.RequestIDMiddleware(),
+		httpx.CORS(httpx.CORSConfig{
+			AllowedOrigins:   cfg.Server.CORSAllowedOrigins,
+			AllowCredentials: cfg.Server.CORSAllowCredentials,
+		}),
+	)
+	// Ensure CORS preflight replies are returned even for routes without handlers.
+	router.OPTIONS("/*path", func(c *gin.Context) {
+		c.AbortWithStatus(http.StatusNoContent)
+	})
 
 	healthService := health.NewService(version, clock.New())
 	health.NewHandler(healthService).RegisterRoutes(router)

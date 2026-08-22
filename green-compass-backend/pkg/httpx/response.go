@@ -31,12 +31,9 @@ type ErrorDetail struct {
 }
 
 // Success returns a successful response envelope.
-// An optional requestID can be passed as a trailing argument.
-func Success(data interface{}, args ...string) *Envelope {
-	var rid string
-	if len(args) > 0 {
-		rid = args[0]
-	}
+// The requestID is optional; when omitted an empty request ID is used.
+func Success(data interface{}, requestID ...string) *Envelope {
+	rid := requestIDOrDefault(requestID)
 	return &Envelope{
 		Data: data,
 		Meta: &Meta{
@@ -47,12 +44,9 @@ func Success(data interface{}, args ...string) *Envelope {
 }
 
 // SuccessWithPagination returns a paginated response envelope.
-// An optional requestID can be passed as a trailing argument.
-func SuccessWithPagination(data interface{}, pagination *PaginationMeta, args ...string) *Envelope {
-	var rid string
-	if len(args) > 0 {
-		rid = args[0]
-	}
+// The requestID is optional; when omitted an empty request ID is used.
+func SuccessWithPagination(data interface{}, pagination *PaginationMeta, requestID ...string) *Envelope {
+	rid := requestIDOrDefault(requestID)
 	return &Envelope{
 		Data: data,
 		Meta: &Meta{
@@ -61,6 +55,13 @@ func SuccessWithPagination(data interface{}, pagination *PaginationMeta, args ..
 			Timestamp:  time.Now().UTC(),
 		},
 	}
+}
+
+func requestIDOrDefault(requestID []string) string {
+	if len(requestID) > 0 {
+		return requestID[0]
+	}
+	return ""
 }
 
 // Error returns an error response envelope

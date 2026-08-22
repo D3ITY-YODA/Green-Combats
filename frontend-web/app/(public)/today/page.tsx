@@ -5,6 +5,8 @@ import { getToday } from "@/lib/api/updates-server";
 import { adaptContextToTodayResponse } from "@/lib/api/updates";
 import type { TodayResponse } from "@/types/updates";
 
+export const dynamic = "force-dynamic";
+
 // Fallback mock data when API is unavailable (no auth, no DB data)
 function getFallbackData(): TodayResponse {
   return {

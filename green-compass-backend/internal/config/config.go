@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/goccy/go-yaml"
@@ -46,6 +47,14 @@ type Server struct {
 	WriteTimeout    Duration `yaml:"write_timeout"`
 	IdleTimeout     Duration `yaml:"idle_timeout"`
 	ShutdownTimeout Duration `yaml:"shutdown_timeout"`
+
+	// CORS configures cross-origin access for browser clients (the web frontend).
+	CORSAllowedOrigins   []string `yaml:"cors_allowed_origins"`
+	CORSAllowCredentials bool     `yaml:"cors_allow_credentials"`
+
+	// RunMigrations applies pending database migrations on process startup.
+	// Enable in deployed environments (Render) so no separate migrate step is required.
+	RunMigrations bool `yaml:"run_migrations"`
 }
 
 type Logging struct {
@@ -114,12 +123,15 @@ func Defaults() *Config {
 	return &Config{
 		AppEnv: EnvLocal,
 		Server: Server{
-			Host:            "",
-			Port:            8080,
-			ReadTimeout:     Duration(10 * time.Second),
-			WriteTimeout:    Duration(10 * time.Second),
-			IdleTimeout:     Duration(120 * time.Second),
-			ShutdownTimeout: Duration(15 * time.Second),
+			Host:                "",
+			Port:                8080,
+			ReadTimeout:         Duration(10 * time.Second),
+			WriteTimeout:        Duration(10 * time.Second),
+			IdleTimeout:         Duration(120 * time.Second),
+			ShutdownTimeout:     Duration(15 * time.Second),
+			CORSAllowedOrigins:  nil,
+			CORSAllowCredentials: true,
+			RunMigrations:       false,
 		},
 		Log: Logging{
 			Level:  "info",
@@ -237,6 +249,13 @@ func applyEnvOverrides(cfg *Config, lookup func(string) (string, bool)) error {
 	applyString(&cfg.AppEnv, lookup, "GC_APP_ENV")
 	applyString(&cfg.Server.Host, lookup, "GC_SERVER_HOST")
 
+	// Render (and most PaaS) inject the listen port via the PORT environment variable.
+	if v, ok := lookup("PORT"); ok && v != "" {
+		if port, err := strconv.Atoi(v); err == nil {
+			cfg.Server.Port = port
+		}
+	}
+
 	if v, ok := lookup("GC_SERVER_PORT"); ok && v != "" {
 		port, err := strconv.Atoi(v)
 		if err != nil {
@@ -271,6 +290,19 @@ func applyEnvOverrides(cfg *Config, lookup func(string) (string, bool)) error {
 
 	applyString(&cfg.Auth.Secret, lookup, "GC_AUTH_SECRET")
 	applyString(&cfg.Auth.Issuer, lookup, "GC_AUTH_ISSUER")
+
+	// CORS configuration for browser clients.
+	if v, ok := lookup("GC_CORS_ALLOWED_ORIGINS"); ok && v != "" {
+		cfg.Server.CORSAllowedOrigins = splitList(v)
+	}
+	if v, ok := lookup("GC_CORS_ALLOW_CREDENTIALS"); ok && v != "" {
+		cfg.Server.CORSAllowCredentials = parseBool(v)
+	}
+
+	// Auto-migrate on startup (deployment convenience).
+	if v, ok := lookup("GC_RUN_MIGRATIONS"); ok && v != "" {
+		cfg.Server.RunMigrations = parseBool(v)
+	}
 
 	for key, dst := range map[string]*Duration{
 		"GC_AUTH_ACCESS_TTL":  &cfg.Auth.AccessTokenTTL,
@@ -329,4 +361,25 @@ func applyString(dst *string, lookup func(string) (string, bool), key string) {
 	if v, ok := lookup(key); ok && v != "" {
 		*dst = v
 	}
+}
+
+// splitList splits a comma-separated environment value into trimmed, non-empty entries.
+func splitList(v string) []string {
+	parts := strings.Split(v, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// parseBool interprets "1", "t", "T", "true", "TRUE", "True" as true; anything else as false.
+func parseBool(v string) bool {
+	b, err := strconv.ParseBool(strings.TrimSpace(v))
+	if err != nil {
+		return false
+	}
+	return b
 }

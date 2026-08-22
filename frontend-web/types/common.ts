@@ -42,3 +42,13 @@ export interface TopicSection {
   data_status?: DataStatus;
   href?: string;
 }
+
+/**
+ * ISO 8601 datetime string
+ */
+export type ISODateTime = string;
+
+/**
+ * ISO 8601 date string (YYYY-MM-DD)
+ */
+export type ISODate = string;

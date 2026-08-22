@@ -76,10 +76,23 @@ func InvalidParam(param, reason string) *AppError {
 	}
 }
 
+// Error constructors with custom messages.
 func NotFound(message string) *AppError {
-	return &AppError{
-		Code:    "NOT_FOUND",
-		Message: message,
-		Status:  http.StatusNotFound,
-	}
+	return &AppError{Code: "NOT_FOUND", Message: message, Status: http.StatusNotFound}
+}
+
+func BadRequest(message string) *AppError {
+	return &AppError{Code: "BAD_REQUEST", Message: message, Status: http.StatusBadRequest}
+}
+
+func Forbidden(message string) *AppError {
+	return &AppError{Code: "FORBIDDEN", Message: message, Status: http.StatusForbidden}
+}
+
+func Unauthorized(message string) *AppError {
+	return &AppError{Code: "UNAUTHORIZED", Message: message, Status: http.StatusUnauthorized}
+}
+
+func Internal(message string) *AppError {
+	return &AppError{Code: "INTERNAL_ERROR", Message: message, Status: http.StatusInternalServerError}
 }

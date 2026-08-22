@@ -1,0 +1,9 @@
+# Files to exclude from the Go API Docker build context.
+.git
+.gitignore
+node_modules
+frontend-web
+mobile
+*.md
+.env
+.env.*

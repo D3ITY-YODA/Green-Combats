@@ -4,6 +4,8 @@ import { getUpdates } from "@/lib/api/updates-server";
 import { adaptUpdateToPublicUpdate } from "@/lib/api/updates";
 import type { PublicUpdate } from "@/types/updates";
 
+export const dynamic = "force-dynamic";
+
 // Fallback mock data
 function getFallbackUpdates(): PublicUpdate[] {
   return [

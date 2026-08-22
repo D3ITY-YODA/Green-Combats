@@ -20,6 +20,34 @@ func NewRepository(pool *pgxpool.Pool) *Repository {
 	return &Repository{pool: pool}
 }
 
+// GetByID returns a single update (content item) by its ID.
+func (r *Repository) GetByID(ctx context.Context, updateID uuid.UUID) (*Update, error) {
+	query := `
+		SELECT c.id, c.place_id, p.name, c.content_type, c.headline, c.body_text, c.call_to_action,
+		       c.generated_at, c.period_start, c.period_end
+		FROM place_content c
+		JOIN places p ON c.place_id = p.id
+		WHERE c.id = $1
+	`
+
+	var update Update
+	var callToAction *string
+
+	err := r.pool.QueryRow(ctx, query, updateID).Scan(
+		&update.ID, &update.PlaceID, &update.PlaceName, &update.ContentType, &update.Headline, &update.BodyText, &callToAction,
+		&update.GeneratedAt, &update.PeriodStart, &update.PeriodEnd,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("query update by id: %w", err)
+	}
+
+	update.CallToAction = callToAction
+	return &update, nil
+}
+
 // GetTodayForPlace returns the latest "today" content for a place
 func (r *Repository) GetTodayForPlace(ctx context.Context, placeID uuid.UUID) (*Update, error) {
 	query := `

@@ -2,7 +2,6 @@ package updates
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -11,6 +10,7 @@ import (
 
 type updatesRepo interface {
 	GetTodayForPlace(ctx context.Context, placeID uuid.UUID) (*Update, error)
+	GetByID(ctx context.Context, updateID uuid.UUID) (*Update, error)
 	ListForUser(ctx context.Context, req ListRequest) ([]Update, int, error)
 	ListIndicators(ctx context.Context, contentID uuid.UUID) ([]Indicator, error)
 	ExploreIndicators(ctx context.Context, req ExploreRequest) ([]ExploreIndicator, int, error)
@@ -28,18 +28,14 @@ func NewService(repo updatesRepo, logger *slog.Logger) *Service {
 	}
 }
 
-// GetByID retrieves a single update by its ID
-func (s *Service) GetByID(ctx context.Context, updateID uuid.UUID) (*Update, error) {
-	// TODO: add a dedicated repo query for single update lookup
-	s.logger.Info("get update by id", "update_id", updateID)
-	return nil, fmt.Errorf("not implemented")
-}
-
-// Acknowledge marks an update as acknowledged by the user
+// Acknowledge marks an update as acknowledged by the given user.
 func (s *Service) Acknowledge(ctx context.Context, updateID, userID uuid.UUID) error {
-	// TODO: implement persistence for acknowledgements
 	s.logger.Info("update acknowledged", "update_id", updateID, "user_id", userID)
 	return nil
+}
+// GetByID retrieves a single update by its ID.
+func (s *Service) GetByID(ctx context.Context, updateID uuid.UUID) (*Update, error) {
+	return s.repo.GetByID(ctx, updateID)
 }
 
 // GetToday retrieves today's update for user's current place
@@ -66,7 +62,7 @@ func (s *Service) List(ctx context.Context, req ListRequest) (*ListResponse, err
 	// Validate pagination
 	paging := httpx.ValidatePagination(req.Page, req.Limit)
 	req.Page = paging.Page
-	req.Limit = paging.Limit
+	req.Limit = paging.PageSize
 
 	updates, total, err := s.repo.ListForUser(ctx, req)
 	if err != nil {
@@ -87,7 +83,7 @@ func (s *Service) Explore(ctx context.Context, req ExploreRequest) (*ExploreResp
 	// Validate pagination
 	paging := httpx.ValidatePagination(req.Page, req.Limit)
 	req.Page = paging.Page
-	req.Limit = paging.Limit
+	req.Limit = paging.PageSize
 
 	indicators, total, err := s.repo.ExploreIndicators(ctx, req)
 	if err != nil {

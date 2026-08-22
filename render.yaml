@@ -1,55 +1,94 @@
-# render.yaml — Green Compass single-container deployment
+# Render deployment manifest for Green Compass.
 #
-# Builds both backend + frontend from the root Dockerfile.
-# External traffic hits the frontend on :3000.
-# Backend runs internally on :8080.
+# Deploys three services:
+#   1. green-compass-db   – PostGIS database (private service, internal network only)
+#   2. green-compass-api  – Go backend API (public web service)
+#   3. green-compass-web  – Next.js frontend (public web service)
 #
-# Deploy:
-#   1. Push to repo
-#   2. Render Dashboard → New → Blueprint → connect repo
-#   3. Render detects render.yaml and creates services
-#   4. Seed DB after first deploy (shell into service, run: /usr/local/bin/api seed)
+# Create these as a "Blueprint" by connecting this repo to Render and selecting
+# the render.yaml file, or create each service individually.
+#
+# NOTE: Render's managed Postgres does NOT include the PostGIS extension that
+# this backend requires (GEOGRAPHY columns), so we run PostGIS ourselves as a
+# private service instead.
 
 services:
-  # ── Green Compass (backend + frontend in one container) ──────────
-  - type: web
-    name: greencompass
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+  # ---------------------------------------------------------------------------
+  # PostGIS database (required by the migrations)
+  # ---------------------------------------------------------------------------
+  - type: pserv
+    name: green-compass-db
+    runtime: docker
+    dockerImage: postgis/postgis:16-3.4
+    plan: free
     envVars:
-      # Backend config
+      - key: POSTGRES_USER
+        value: greencompass
+      - key: POSTGRES_DB
+        value: greencompass
+      # sync: false makes Render generate a strong random password for you.
+      - key: POSTGRES_PASSWORD
+        sync: false
+    # Persist the Postgres data directory across restarts/deploys.
+    # (A disk is billable; on the free plan you may remove this block, at the
+    #  cost of losing data whenever the service is rebuilt.)
+    disk:
+      name: pgdata
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
+
+  # ---------------------------------------------------------------------------
+  # Go backend API
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: green-compass-api
+    runtime: docker
+    dockerfilePath: ./green-compass-backend/Dockerfile
+    plan: free
+    # The API exposes /health for health checks.
+    healthCheckPath: /health
+    envVars:
       - key: GC_APP_ENV
         value: production
-      - key: GC_SERVER_HOST
-        value: "0.0.0.0"
-      - key: GC_SERVER_PORT
-        value: "8080"
+      # Render injects the listen port via PORT; the API reads it automatically.
+      - key: PORT
+        sync: false
+      # Connection string to the PostGIS private service defined above.
+      - key: GC_DATABASE_URL
+        value: postgres://greencompass:$(green-compass-db.POSTGRES_PASSWORD)@$(green-compass-db.HOST):5432/greencompass?sslmode=disable
+      # Apply pending migrations on startup so no separate migrate step is needed.
+      - key: GC_RUN_MIGRATIONS
+        value: "true"
+      # Allow the browser frontend to call this API cross-origin.
+      # For production you may restrict this to your frontend's exact origin.
+      - key: GC_CORS_ALLOWED_ORIGINS
+        value: "*"
+      - key: GC_CORS_ALLOW_CREDENTIALS
+        value: "false"
+      - key: GC_AUTH_ISSUER
+        value: green-compass
       - key: GC_LOG_LEVEL
         value: info
       - key: GC_LOG_FORMAT
         value: json
-      - key: GC_DATABASE_URL
-        fromDatabase:
-          name: greencompass-db
-          property: connectionString
+      # sync: false generates a strong random JWT signing secret.
       - key: GC_AUTH_SECRET
-        generateValue: true
-      - key: GC_AUTH_ISSUER
-        value: green-compass
-      # Frontend config
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_APP_NAME
-        value: Green Compass
-      - key: NEXT_PUBLIC_API_URL
-        value: http://localhost:8080
-      - key: NEXT_PUBLIC_DEFAULT_LOCALE
-        value: en
-    healthCheckPath: /healthz
-    autoDeploy: true
+        sync: false
 
-databases:
-  - name: greencompass-db
-    plan: starter
-    databaseName: greencompass
-    ipAllowList: []
+  # ---------------------------------------------------------------------------
+  # Next.js frontend
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: green-compass-web
+    runtime: node
+    rootDir: ./frontend-web
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # Public URL of the API service above. Update if you rename the service.
+      - key: NEXT_PUBLIC_API_URL
+        value: https://green-compass-api.onrender.com

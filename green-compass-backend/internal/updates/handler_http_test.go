@@ -69,7 +69,7 @@ func (s *stubUpdatesAPI) Explore(_ context.Context, req updates.ExploreRequest) 
 }
 
 func (s *stubUpdatesAPI) GetByID(_ context.Context, _ uuid.UUID) (*updates.Update, error) {
-	return nil, nil
+	return &updates.Update{}, nil
 }
 
 func (s *stubUpdatesAPI) Acknowledge(_ context.Context, _, _ uuid.UUID) error {

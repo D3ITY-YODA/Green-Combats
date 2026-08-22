@@ -19,6 +19,15 @@ func (m *mockUpdatesRepo) GetTodayForPlace(ctx context.Context, placeID uuid.UUI
 	return nil, ErrNotFound
 }
 
+func (m *mockUpdatesRepo) GetByID(ctx context.Context, updateID uuid.UUID) (*Update, error) {
+	for _, u := range m.todayUpdates {
+		if u.ID == updateID {
+			return u, nil
+		}
+	}
+	return nil, ErrNotFound
+}
+
 func (m *mockUpdatesRepo) ListForUser(ctx context.Context, req ListRequest) ([]Update, int, error) {
 	return []Update{}, 0, nil
 }

@@ -488,6 +488,42 @@ npx playwright test
 - **Docker**: Can be containerized for self-hosted deployment
 - **Static Export**: Available for marketing pages
 
+### Render (recommended all-in-one)
+
+A `render.yaml` Blueprint is provided at the repository root that deploys the
+full stack on [Render](https://render.com):
+
+1. **`green-compass-db`** — a PostGIS private service (`postgis/postgis:16-3.4`).
+   Render's managed Postgres does **not** include the PostGIS extension this
+   backend requires, so PostGIS is run as its own internal service.
+2. **`green-compass-api`** — the Go API, built from
+   `green-compass-backend/Dockerfile`. It reads `PORT` (injected by Render),
+   applies database migrations automatically on startup (`GC_RUN_MIGRATIONS=true`),
+   and enables CORS for the frontend.
+3. **`green-compass-web`** — the Next.js frontend, configured with
+   `NEXT_PUBLIC_API_URL` pointing at the API service so the browser can call it.
+
+To deploy:
+
+```bash
+# Connect the repo to Render and create the Blueprint from render.yaml,
+# or run the Render CLI from the repo root:
+render blueprint launch
+```
+
+Key environment variables (all wired in `render.yaml`):
+
+| Service | Variable | Purpose |
+|---------|----------|---------|
+| api | `GC_DATABASE_URL` | Built from the db service's generated password/host |
+| api | `GC_RUN_MIGRATIONS` | Applies migrations on startup (`true`) |
+| api | `GC_CORS_ALLOWED_ORIGINS` | Browser origins allowed to call the API |
+| api | `GC_AUTH_SECRET` | JWT signing secret (auto-generated) |
+| web | `NEXT_PUBLIC_API_URL` | Public URL of the API service |
+
+For production, restrict `GC_CORS_ALLOWED_ORIGINS` to your frontend's exact
+origin and add a disk to `green-compass-db` if you need data to survive rebuilds.
+
 ### Mobile
 
 - **Google Play Store**: Build signed release APK

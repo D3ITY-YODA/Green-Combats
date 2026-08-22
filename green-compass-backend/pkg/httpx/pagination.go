@@ -7,6 +7,9 @@ type PaginationParams struct {
 	Limit    int // Alias for PageSize — callers may use either
 }
 
+// MaxPageSize is the upper bound for page sizes accepted by the API.
+const MaxPageSize = 100
+
 // ValidatePagination ensures pagination parameters are within bounds
 func ValidatePagination(page, pageSize int) PaginationParams {
 	const (
