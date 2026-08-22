@@ -1,0 +1,64 @@
+# docker-compose.yml — Full Green Compass stack
+# Usage:
+#   docker compose up --build        (foreground)
+#   docker compose up --build -d     (detached)
+#   docker compose down              (stop & remove)
+
+services:
+  # ── PostGIS database ────────────────────────────────────────────
+  postgres:
+    image: postgis/postgis:17-3.5
+    container_name: greencompass-postgres
+    environment:
+      POSTGRES_USER: greencompass
+      POSTGRES_PASSWORD: greencompass
+      POSTGRES_DB: greencompass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greencompass -d greencompass"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  # ── Go backend API ─────────────────────────────────────────────
+  backend:
+    build:
+      context: ./green-compass-backend
+      dockerfile: Dockerfile
+    container_name: greencompass-backend
+    ports:
+      - "8080:8080"
+    environment:
+      GC_APP_ENV: production
+      GC_SERVER_HOST: "0.0.0.0"
+      GC_SERVER_PORT: "8080"
+      GC_LOG_LEVEL: info
+      GC_LOG_FORMAT: json
+      GC_DATABASE_URL: postgres://greencompass:greencompass@postgres:5432/greencompass?sslmode=disable
+      GC_AUTH_SECRET: "${GC_AUTH_SECRET:-change-me-in-production}"
+      GC_AUTH_ISSUER: green-compass
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Next.js frontend ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend-web
+      dockerfile: Dockerfile
+    container_name: greencompass-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_APP_NAME: Green Compass
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_DEFAULT_LOCALE: en
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
