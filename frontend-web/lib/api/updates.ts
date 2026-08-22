@@ -30,6 +30,16 @@ export async function getUpdatesClient(params: { page?: number; limit?: number; 
   return fetchAPI<UpdatesListResponse>(`/v1/updates${qs ? `?${qs}` : ""}`);
 }
 
+export async function getExploreIndicators(params: { category?: string; placeId?: string; page?: number; limit?: number } = {}): Promise<{ indicators: ExploreIndicator[]; total: number; page: number; limit: number; has_next: boolean }> {
+  const searchParams = new URLSearchParams();
+  if (params.category) searchParams.set("category", params.category);
+  if (params.placeId) searchParams.set("place_id", params.placeId);
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
+  const qs = searchParams.toString();
+  return fetchAPI(`/v1/explore${qs ? `?${qs}` : ""}`);
+}
+
 // ── Adapters ──────────────────────────────────────────────────────
 
 /**

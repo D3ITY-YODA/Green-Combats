@@ -1,0 +1,60 @@
+# render.yaml — Green Compass full-stack deployment blueprint
+#
+# Deploy steps:
+#   1. Push this file to your repo
+#   2. Go to https://dashboard.render.com → New → Blueprint
+#   3. Connect your GitHub repo (D3ITY-YODA/Green-Combats)
+#   4. Render detects this file and creates all 3 services
+#   5. After first deploy, shell into greencompass-api and run:
+#      /usr/local/bin/migrate up
+#      (migrations also run automatically on each deploy/restart)
+
+services:
+  # ── Go Backend API ──────────────────────────────────────────────
+  - type: web
+    name: greencompass-api
+    dockerfilePath: ./green-compass-backend/Dockerfile
+    dockerContext: ./green-compass-backend
+    envVars:
+      - key: GC_APP_ENV
+        value: production
+      - key: GC_SERVER_HOST
+        value: "0.0.0.0"
+      - key: GC_SERVER_PORT
+        value: "8080"
+      - key: GC_LOG_LEVEL
+        value: info
+      - key: GC_LOG_FORMAT
+        value: json
+      - key: GC_DATABASE_URL
+        fromDatabase:
+          name: greencompass-db
+          property: connectionString
+      - key: GC_AUTH_SECRET
+        generateValue: true
+      - key: GC_AUTH_ISSUER
+        value: green-compass
+    healthCheckPath: /healthz
+    autoDeploy: true
+
+  # ── Next.js Frontend ────────────────────────────────────────────
+  - type: web
+    name: greencompass-web
+    dockerfilePath: ./frontend-web/Dockerfile
+    dockerContext: ./frontend-web
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Green Compass
+      - key: NEXT_PUBLIC_API_URL
+        value: https://greencompass-api.onrender.com
+      - key: NEXT_PUBLIC_DEFAULT_LOCALE
+        value: en
+    autoDeploy: true
+
+databases:
+  - name: greencompass-db
+    plan: starter
+    databaseName: greencompass
+    ipAllowList: []
