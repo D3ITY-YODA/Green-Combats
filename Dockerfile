@@ -36,7 +36,7 @@ COPY --from=frontend-deps /app/node_modules ./node_modules
 COPY frontend-web/ ./
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_API_URL=http://localhost:8080
-ENV NEXT_PUBLIC_APP_NAME=Green Compass
+ENV NEXT_PUBLIC_APP_NAME="Green Compass"
 ENV NEXT_PUBLIC_DEFAULT_LOCALE=en
 RUN npm run build
 
