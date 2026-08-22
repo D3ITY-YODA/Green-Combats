@@ -16,8 +16,8 @@ const publicPaths = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Check for the session cookie (adjust the cookie name if your backend uses a different one)
-  const hasSession = request.cookies.has("gc_session");
+  // Check for the access token cookie (gc_session) or refresh token (gc_refresh)
+  const hasSession = request.cookies.has("gc_session") || request.cookies.has("gc_refresh");
 
   // Check if the current path is a public path
   const isPublicPath = publicPaths.some(

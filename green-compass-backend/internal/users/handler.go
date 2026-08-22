@@ -47,14 +47,13 @@ func (h *Handler) ListUsers(c *gin.Context) {
 	if v := c.Query("limit"); v != "" {
 		if l, err := strconv.Atoi(v); err == nil && l > 0 {
 			limit = l
-		}
-	}
+		}	}
 
 	c.JSON(http.StatusOK, httpx.Success(gin.H{
 		"users": []interface{}{},
 		"page":  page,
 		"limit": limit,
-	}))
+	}, httpx.GetRequestID(c)))
 }
 
 // GetUser returns a single user by ID.
@@ -69,8 +68,7 @@ func (h *Handler) GetUser(c *gin.Context) {
 	user, err := h.svc.ByID(c.Request.Context(), id)
 	if err != nil {
 		httpx.HandleError(c, httpx.ErrNotFound)
-		return
-	}
+		return	}
 
 	c.JSON(http.StatusOK, httpx.Success(gin.H{
 		"user": gin.H{
@@ -81,5 +79,5 @@ func (h *Handler) GetUser(c *gin.Context) {
 			"language":          user.Language,
 			"is_platform_admin": user.IsPlatformAdmin,
 		},
-	}))
+		}, httpx.GetRequestID(c)))
 }

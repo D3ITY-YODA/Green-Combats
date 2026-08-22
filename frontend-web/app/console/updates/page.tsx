@@ -1,12 +1,26 @@
-import { Plus } from "lucide-react";
+"use client";
 
-const mockUpdates = [
-  { status: "Published", type: "Flood warning", place: "Lower Valley", updated: "10:00" },
-  { status: "Review", type: "Water outlook", place: "East Ward", updated: "09:30" },
-  { status: "Draft", type: "Seasonal info", place: "North Basin", updated: "Yesterday" },
-];
+import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
+import { getUpdatesClient } from "@/lib/api/updates";
+import { adaptUpdateToPublicUpdate } from "@/lib/api/updates";
+import type { Update } from "@/types/updates";
+
+const statusColors: Record<string, string> = {
+  today: "bg-status-normal/10 text-status-normal",
+  forecast: "bg-status-watch/10 text-status-watch",
+  alert: "bg-status-important/10 text-status-important",
+};
 
 export default function ConsoleUpdates() {
+  const [updates, setUpdates] = useState<Update[]>([]);
+
+  useEffect(() => {
+    getUpdatesClient({ page: 1, limit: 50 })
+      .then(result => setUpdates(result.updates))
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -28,25 +42,29 @@ export default function ConsoleUpdates() {
             </tr>
           </thead>
           <tbody className="divide-y divide-background-stone">
-            {mockUpdates.map((update, i) => (
-              <tr key={i} className="hover:bg-background-mist/50">
-                <td className="p-4">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    update.status === "Published" ? "bg-status-normal/10 text-status-normal" :
-                    update.status === "Review" ? "bg-status-watch/10 text-status-watch" :
-                    "bg-background-stone text-text-muted"
-                  }`}>
-                    {update.status}
-                  </span>
-                </td>
-                <td className="p-4 text-text-charcoal font-medium">{update.type}</td>
-                <td className="p-4 text-text-muted">{update.place}</td>
-                <td className="p-4 text-text-muted">{update.updated}</td>
-                <td className="p-4 text-right">
-                  <button className="text-forest hover:underline text-xs font-medium">Edit</button>
+            {updates.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-8 text-center text-text-muted">
+                  No updates found
                 </td>
               </tr>
-            ))}
+            ) : (
+              updates.map((update) => (
+                <tr key={update.id} className="hover:bg-background-mist/50">
+                  <td className="p-4">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[update.content_type] || "bg-background-stone text-text-muted"}`}>
+                      {update.content_type}
+                    </span>
+                  </td>
+                  <td className="p-4 text-text-charcoal font-medium">{update.headline}</td>
+                  <td className="p-4 text-text-muted">{update.place_name}</td>
+                  <td className="p-4 text-text-muted">{new Date(update.generated_at).toLocaleDateString()}</td>
+                  <td className="p-4 text-right">
+                    <button className="text-forest hover:underline text-xs font-medium">Edit</button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -1,14 +1,17 @@
-// types/api.ts
-
 /**
  * Metadata included in paginated or list API responses.
  */
 export interface ApiMeta {
   request_id: string;
   generated_at: string;
-  page?: number;
-  page_size?: number;
-  total?: number;
+  pagination?: PaginationMeta;
+}
+
+export interface PaginationMeta {
+  page: number;
+  page_size: number;
+  total: number;
+  has_next: boolean;
   next_cursor?: string;
 }
 
