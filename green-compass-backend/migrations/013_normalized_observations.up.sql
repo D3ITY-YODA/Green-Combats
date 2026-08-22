@@ -1,6 +1,6 @@
 -- Normalized observations: canonical internal format after normalization
 CREATE TABLE normalized_observations (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                  UUID DEFAULT gen_random_uuid(),
     source_key          TEXT NOT NULL,
     dataset_key         TEXT NOT NULL,
     topic_key           TEXT NOT NULL,
@@ -19,7 +19,8 @@ CREATE TABLE normalized_observations (
     source_version      TEXT,
     raw_asset_ref       TEXT NOT NULL,
     license             TEXT,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (id, observed_at)
 ) PARTITION BY RANGE (observed_at);
 
 CREATE INDEX idx_normalized_observations_geometry
