@@ -1,7 +1,21 @@
 import Link from "next/link";
 import { Plus, MapPin } from "lucide-react";
+import { getSavedPlaces } from "@/lib/api/places-server";
 
-export default function PlacesPage() {
+// Fallback when no auth
+function getFallbackPlaces() {
+  return [{ id: "1", name: "Lower Valley", place_type: "ward", is_primary: true, lat: 0, lon: 0, saved_at: "" }];
+}
+
+export default async function PlacesPage() {
+  let places;
+
+  try {
+    places = await getSavedPlaces();
+  } catch {
+    places = getFallbackPlaces();
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between mb-8">
@@ -11,10 +25,17 @@ export default function PlacesPage() {
         </Link>
       </div>
       <div className="space-y-3">
-        <Link href="/places/1" className="flex items-center justify-between rounded-xl border border-background-stone bg-background p-4 hover:bg-background-mist transition-colors">
-          <div className="flex items-center gap-3"><MapPin className="h-5 w-5 text-forest" /><span className="text-base font-medium text-text-charcoal">Lower Valley</span></div>
-          <span className="text-xs text-status-normal font-medium">Primary</span>
-        </Link>
+        {places.map((place) => (
+          <Link key={place.id} href={`/places/${place.id}`} className="flex items-center justify-between rounded-xl border border-background-stone bg-background p-4 hover:bg-background-mist transition-colors">
+            <div className="flex items-center gap-3">
+              <MapPin className="h-5 w-5 text-forest" />
+              <span className="text-base font-medium text-text-charcoal">{place.name}</span>
+            </div>
+            {place.is_primary && (
+              <span className="text-xs text-status-normal font-medium">Primary</span>
+            )}
+          </Link>
+        ))}
       </div>
     </div>
   );

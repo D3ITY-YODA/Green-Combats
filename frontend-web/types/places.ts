@@ -1,16 +1,49 @@
 import { UUID } from "./common";
-export type PlaceType = "country" | "region" | "district" | "ward" | "village" | "community" | "watershed" | "waterbody" | "custom_area";
+
+/**
+ * Matches the backend Place model.
+ */
 export interface Place {
   id: UUID;
   name: string;
-  type: PlaceType;
-  country_code: string;
+  place_type: PlaceType;
+  lat: number;
+  lon: number;
+  external_code?: string | null;
+  created_by?: UUID | null;
+  created_at?: string;
+  updated_at?: string;
 }
-export interface UserPlace {
+
+export type PlaceType = "country" | "region" | "district" | "ward" | "village" | "community" | "watershed" | "waterbody" | "custom_area";
+
+/**
+ * Matches the backend SavedPlace from /v1/me/places.
+ */
+export interface SavedPlace {
   id: UUID;
-  user_id: UUID;
-  place_id: UUID;
-  label?: string;
+  name: string;
+  place_type: PlaceType;
+  lat: number;
+  lon: number;
+  label?: string | null;
   is_primary: boolean;
-  place: Place;
+  saved_at: string;
+}
+
+/**
+ * Nearby place with distance — from /v1/places/nearby.
+ */
+export interface NearbyPlace extends Place {
+  distance_m: number;
+}
+
+/**
+ * Input for creating a place.
+ */
+export interface CreatePlaceInput {
+  name: string;
+  place_type: string;
+  lat: number;
+  lon: number;
 }

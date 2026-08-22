@@ -1,21 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitReportSchema, type ReportFormValues } from "@/schemas/reports";
+import { submitObservation } from "@/lib/api/observations";
 
 export default function ReportPage() {
   const [isSuccess, setIsSuccess] = useState(false);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ReportFormValues>({
+  const [submitError, setSubmitError] = useState("");
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<ReportFormValues>({
     resolver: zodResolver(SubmitReportSchema),
-    defaultValues: { type: "water_change", description: "", place_id: "1", location: { latitude: 0, longitude: 0 }, observed_at: new Date().toISOString() }
+    defaultValues: {
+      type: "water_change",
+      description: "",
+      place_id: "1",
+      location: { latitude: 0, longitude: 0 },
+      observed_at: new Date().toISOString(),
+    },
   });
 
+  // Try to get geolocation on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+          setLocation(loc);
+          setValue("location", { latitude: loc.lat, longitude: loc.lon });
+        },
+        () => { /* Geolocation denied — user can still submit */ },
+        { enableHighAccuracy: true, timeout: 5000 },
+      );
+    }
+  }, [setValue]);
+
   const onSubmit = async (data: ReportFormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API
-    console.log("Submitted:", data);
-    setIsSuccess(true);
+    setSubmitError("");
+    try {
+      await submitObservation({
+        category: mapReportTypeToCategory(data.type),
+        description: data.description || "",
+        place_id: data.place_id || undefined,
+        lat: data.location.latitude || undefined,
+        lon: data.location.longitude || undefined,
+      });
+      setIsSuccess(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Submission failed. Please try again.");
+    }
   };
 
   if (isSuccess) {
@@ -36,6 +71,9 @@ export default function ReportPage() {
       <header className="mb-8">
         <p className="text-sm text-text-muted">Report an update</p>
         <h1 className="mt-1 text-3xl font-semibold text-text-charcoal">What are you seeing?</h1>
+        {location && (
+          <p className="mt-2 text-xs text-status-normal">📍 Location detected ({location.lat.toFixed(4)}, {location.lon.toFixed(4)})</p>
+        )}
       </header>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <fieldset>
@@ -63,10 +101,26 @@ export default function ReportPage() {
           {errors.description && <p className="mt-2 text-sm text-status-emergency">{errors.description.message}</p>}
         </label>
 
+        {submitError && (
+          <p className="text-sm text-status-emergency">{submitError}</p>
+        )}
+
         <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-forest px-5 py-3 font-medium text-white hover:bg-forest-deep disabled:opacity-50">
           {isSubmitting ? "Sending..." : "Send update"}
         </button>
       </form>
     </div>
   );
+}
+
+/** Map the report form type to backend observation category. */
+function mapReportTypeToCategory(type: string): "flood" | "drought" | "water_quality" | "crop_damage" | "air_quality" | "other" {
+  const map: Record<string, "flood" | "drought" | "water_quality" | "crop_damage" | "air_quality" | "other"> = {
+    water_change: "water_quality",
+    flooding_visible: "flood",
+    unusually_dry: "drought",
+    vegetation_stress: "crop_damage",
+    other: "other",
+  };
+  return map[type] || "other";
 }

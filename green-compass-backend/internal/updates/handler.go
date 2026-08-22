@@ -2,6 +2,7 @@ package updates
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -85,6 +86,7 @@ func (h *Handler) ListUpdates(c *gin.Context) {
 		Limit:   limit,
 	})
 	if err != nil {
+		log.Printf("ListUpdates error: %v", err)
 		httpx.HandleError(c, httpx.ErrInternal)
 		return
 	}
